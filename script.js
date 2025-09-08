@@ -148,13 +148,75 @@ if (contactoForm) {
     });
 }
 
-// Validación de login
+// Registro de usuario
+const registerForm = document.querySelector('form');
+if (registerForm && window.location.pathname.includes('register.html')) {
+    registerForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        let valido = true;
+        const nombre = registerForm.nombre.value.trim();
+        const email = registerForm.email.value.trim();
+        const password = registerForm.password.value.trim();
+        if (nombre.length < 3 || nombre.length > 100) {
+            valido = false;
+            mostrarError(registerForm.nombre, 'El nombre debe tener entre 3 y 100 caracteres.');
+        }
+        if (!/^([\w.-]+)@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/.test(email) || email.length > 100) {
+            valido = false;
+            mostrarError(registerForm.email, 'Correo válido requerido (@duoc.cl, @profesor.duoc.cl, @gmail.com, máx 100 caracteres).');
+        }
+        if (password.length < 4 || password.length > 10) {
+            valido = false;
+            mostrarError(registerForm.password, 'Contraseña entre 4 y 10 caracteres.');
+        }
+        if (!valido) return;
+        // Guardar usuario en localStorage
+        const usuario = { nombre, email, password, imagen: 'default-user.png' };
+        localStorage.setItem('usuario', JSON.stringify(usuario));
+        // Mensaje de éxito
+        mostrarMensajeExito('¡Registro exitoso! Ahora puedes iniciar sesión.');
+        registerForm.reset();
+    });
+}
+
+function mostrarMensajeExito(mensaje) {
+    let msg = document.getElementById('registro-exito');
+    if (!msg) {
+        msg = document.createElement('div');
+        msg.id = 'registro-exito';
+        msg.className = 'exito';
+        registerForm.parentNode.insertBefore(msg, registerForm);
+    }
+    msg.textContent = mensaje;
+    msg.style.color = 'green';
+    setTimeout(() => { msg.textContent = ''; }, 4000);
+}
+
+// Mostrar usuario arriba si está logueado
+function mostrarUsuario() {
+    const usuario = JSON.parse(localStorage.getItem('usuarioLogueado'));
+    const header = document.querySelector('header');
+    if (usuario && header) {
+        let userDiv = document.getElementById('usuario-header');
+        if (!userDiv) {
+            userDiv = document.createElement('div');
+            userDiv.id = 'usuario-header';
+            userDiv.className = 'usuario-header';
+            header.appendChild(userDiv);
+        }
+        userDiv.innerHTML = `<img src="${usuario.imagen}" alt="Usuario" class="usuario-img"> <span>${usuario.nombre}</span>`;
+    }
+}
+mostrarUsuario();
+
+// Login: guardar usuario logueado
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', function(e) {
         let valido = true;
         const email = loginForm.email.value.trim();
         const password = loginForm.password.value.trim();
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
         if (!/^([\w.-]+)@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/.test(email) || email.length > 100) {
             valido = false;
             mostrarError(loginForm.email, 'Correo válido requerido (@duoc.cl, @profesor.duoc.cl, @gmail.com, máx 100 caracteres).');
@@ -163,7 +225,14 @@ if (loginForm) {
             valido = false;
             mostrarError(loginForm.password, 'Contraseña entre 4 y 10 caracteres.');
         }
+        if (!usuario || usuario.email !== email || usuario.password !== password) {
+            valido = false;
+            mostrarError(loginForm.password, 'Usuario o contraseña incorrectos.');
+        }
         if (!valido) e.preventDefault();
+        else {
+            localStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
+        }
     });
 }
 
