@@ -17,22 +17,34 @@
                 <li><a href="login.html">Login</a></li>
             </ul>
         </nav>
+        <div class="carrito-header">
+            <h2>Carrito</h2>
+            <ul id="carrito-list" class="carrito-list"></ul>
+            <p id="carrito-total" class="carrito-total"></p>
+        </div>
     </header>
     <main>
         <section class="productos">
             <h2>Productos Destacados</h2>
-            <div class="producto">
-                <img src="https://http2.mlstatic.com/D_NQ_NP_936463-MLC42018693002_052020-O.webp" alt="Perfume 1">
-                <h3>Perfume 1</h3>
-                <p>Fragancia fresca y elegante para cualquier ocasión.</p>
-                <button>Agregar al carrito</button>
-            </div>
-            <div class="producto">
-                <img src="https://via.placeholder.com/150" alt="Perfume 2">
-                <h3>Perfume 2</h3>
-                <p>Perfume intenso y sofisticado, ideal para la noche.</p>
-                <button>Agregar al carrito</button>
-            </div>
+            <div id="productos-list"></div>
+        </section>
+        <section class="contacto">
+            <h2>Contáctanos</h2>
+            <form id="contacto-form">
+                <label for="nombre">Nombre</label>
+                <input type="text" name="nombre" id="nombre" maxlength="100" required>
+                <!-- Mensaje de error dinámico -->
+
+                <label for="correo">Correo electrónico</label>
+                <input type="email" name="correo" id="correo" maxlength="100" required>
+                <!-- Mensaje de error dinámico -->
+
+                <label for="comentario">Comentario</label>
+                <textarea name="comentario" id="comentario" maxlength="500" required></textarea>
+                <!-- Mensaje de error dinámico -->
+
+                <button type="submit">Enviar</button>
+            </form>
         </section>
     </main>
     <aside>
@@ -43,7 +55,7 @@
         </ul>
     </aside>
     <footer>
-        <p>&copy; 2025 Tienda Online Fullstack II</p>
+        <p>&copy; 2025 Tienda Online Perfumes</p>
     </footer>
     <script src="script.js"></script>
 </body>
