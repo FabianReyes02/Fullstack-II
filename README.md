@@ -1,5 +1,6 @@
 # Tienda Online PerfumeStore
- ![b5e5daf193cfa6bb18087ea578f14520](https://github.com/user-attachments/assets/f6e0bee5-da1b-4090-bd09-51772c1c39d3)
+ <img width="200" height="200" alt="HTML5_logo_and_wordmark svg" src="![b5e5daf193cfa6bb18087ea578f14520](https://github.com/user-attachments/assets/0017adec-faef-44b6-b8ca-e64a913a964d)
+" />
 
 
 ## Descripción
@@ -30,11 +31,11 @@ Este proyecto es una tienda online de perfumes desarrollada para la Evaluación 
 
 ## Tecnologías Utilizadas
 - HTML5
-- <img width="200" height="200" alt="HTML5_logo_and_wordmark svg" src="https://github.com/user-attachments/assets/742b3e03-a1ab-47e4-a071-4f5a8d7a2121" />
+  <img width="200" height="200" alt="HTML5_logo_and_wordmark svg" src="https://github.com/user-attachments/assets/742b3e03-a1ab-47e4-a071-4f5a8d7a2121" />
 - CSS3
-- <img width="200" height="200" alt="images" src="https://github.com/user-attachments/assets/52ea21ba-874d-4514-9b26-c37249919d2d" />
+  <img width="200" height="200" alt="images" src="https://github.com/user-attachments/assets/52ea21ba-874d-4514-9b26-c37249919d2d" />
 - JavaScript
-- <img width="200" height="200" alt="Unofficial_JavaScript_logo_2 svg" src="https://github.com/user-attachments/assets/ca99480c-6314-4c88-afb2-13997b74ef7b" />
+  <img width="200" height="200" alt="Unofficial_JavaScript_logo_2 svg" src="https://github.com/user-attachments/assets/ca99480c-6314-4c88-afb2-13997b74ef7b" />
  
 ## Cómo ejecutar
 1. Clona el repositorio en tu máquina local.
