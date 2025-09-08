@@ -17,16 +17,32 @@
                 <li><a href="login.html">Login</a></li>
             </ul>
         </nav>
-        <div class="carrito-header">
+        <button class="carrito-circulo" id="carrito-circulo" onclick="toggleCarrito()">
+            <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" alt="Carrito" width="32" height="32">
+            <span id="carrito-cantidad">0</span>
+        </button>
+        <div class="carrito-header" id="carrito-header" style="display:none;">
             <h2>Carrito</h2>
             <ul id="carrito-list" class="carrito-list"></ul>
             <p id="carrito-total" class="carrito-total"></p>
         </div>
     </header>
     <main>
+        <aside>
+            <h2>Menú de Categorías</h2>
+            <ul id="menu-categorias">
+                <li><a href="#" onclick="filtrarCategoria('Femenino')">Femenino</a></li>
+                <li><a href="#" onclick="filtrarCategoria('Masculino')">Masculino</a></li>
+                <li><a href="#" onclick="filtrarCategoria('Unisex')">Unisex</a></li>
+                <li><a href="#" onclick="filtrarCategoria('Infantil')">Infantil</a></li>
+                <li><a href="#" onclick="filtrarCategoria('Todos')">Todos</a></li>
+            </ul>
+        </aside>
         <section class="productos">
+            <div> 
             <h2>Productos Destacados</h2>
             <div id="productos-list"></div>
+            </div>
         </section>
         <section class="contacto">
             <h2>Contáctanos</h2>
@@ -47,13 +63,6 @@
             </form>
         </section>
     </main>
-    <aside>
-        <h2>Menú Lateral</h2>
-        <ul>
-            <li><a href="#">Categoría 1</a></li>
-            <li><a href="#">Categoría 2</a></li>
-        </ul>
-    </aside>
     <footer>
         <p>&copy; 2025 Tienda Online Perfumes</p>
     </footer>

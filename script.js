@@ -2,17 +2,51 @@
 const productos = [
     {
         id: 1,
-        nombre: "Perfume 1",
-        descripcion: "Fragancia fresca y elegante para cualquier ocasión.",
+        nombre: "Perfume Femenino 1",
+        descripcion: "Fragancia floral y elegante para mujer.",
         precio: 19990,
-        imagen: "https://http2.mlstatic.com/D_NQ_NP_936463-MLC42018693002_052020-O.webp"
+        imagen: "https://http2.mlstatic.com/D_NQ_NP_936463-MLC42018693002_052020-O.webp",
+        categoria: "Femenino"
     },
     {
         id: 2,
-        nombre: "Perfume 2",
-        descripcion: "Perfume intenso y sofisticado, ideal para la noche.",
+        nombre: "Perfume Masculino 1",
+        descripcion: "Aroma intenso y sofisticado para hombre.",
         precio: 24990,
-        imagen: "https://www.zonaperfumes.cl/wp-content/uploads/Perfume-Uniquee-Luxury-Mangonifiscent-Extrait-de-Parfum-Unisex.jpg"
+        imagen: "https://www.zonaperfumes.cl/wp-content/uploads/Perfume-Uniquee-Luxury-Mangonifiscent-Extrait-de-Parfum-Unisex.jpg",
+        categoria: "Masculino"
+    },
+    {
+        id: 3,
+        nombre: "Perfume Unisex 1",
+        descripcion: "Fragancia fresca y versátil para todos.",
+        precio: 22990,
+        imagen: "https://www.perfumesclub.cl/images/products/1000x1000/100000/100000.jpg",
+        categoria: "Unisex"
+    },
+    {
+        id: 4,
+        nombre: "Perfume Infantil 1",
+        descripcion: "Aroma suave y divertido para niños.",
+        precio: 15990,
+        imagen: "https://www.perfumesclub.cl/images/products/1000x1000/100001/100001.jpg",
+        categoria: "Infantil"
+    },
+    {
+        id: 5,
+        nombre: "Perfume Femenino 2",
+        descripcion: "Perfume dulce y moderno para mujer.",
+        precio: 20990,
+        imagen: "https://www.perfumesclub.cl/images/products/1000x1000/100002/100002.jpg",
+        categoria: "Femenino"
+    },
+    {
+        id: 6,
+        nombre: "Perfume Masculino 2",
+        descripcion: "Aroma clásico y elegante para hombre.",
+        precio: 25990,
+        imagen: "https://www.perfumesclub.cl/images/products/1000x1000/100003/100003.jpg",
+        categoria: "Masculino"
     }
 ];
 
@@ -237,10 +271,11 @@ if (loginForm) {
 }
 
 // Mostrar productos
-function mostrarProductos() {
+function mostrarProductos(categoria = 'Todos') {
     const contenedor = document.getElementById('productos-list');
     contenedor.innerHTML = '';
-    productos.forEach(producto => {
+    let filtrados = categoria === 'Todos' ? productos : productos.filter(p => p.categoria === categoria);
+    filtrados.forEach(producto => {
         const div = document.createElement('div');
         div.className = 'producto';
         div.innerHTML = `
@@ -254,8 +289,24 @@ function mostrarProductos() {
     });
 }
 
+function filtrarCategoria(categoria) {
+    mostrarProductos(categoria);
+}
+
+function toggleCarrito() {
+    const carritoHeader = document.getElementById('carrito-header');
+    carritoHeader.style.display = carritoHeader.style.display === 'none' ? 'block' : 'none';
+}
+
+function actualizarCarritoCantidad() {
+    const cantidad = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+    const span = document.getElementById('carrito-cantidad');
+    if (span) span.textContent = cantidad;
+}
+
 // Inicializar
 if (document.getElementById('productos-list')) {
     mostrarProductos();
     mostrarCarrito();
+    actualizarCarritoCantidad();
 }
