@@ -1,6 +1,5 @@
 # Tienda Online PerfumeStore
- <img width="200" height="200" alt="HTML5_logo_and_wordmark svg" src="![b5e5daf193cfa6bb18087ea578f14520](https://github.com/user-attachments/assets/0017adec-faef-44b6-b8ca-e64a913a964d)
-" />
+![b5e5daf193cfa6bb18087ea578f14520](https://github.com/user-attachments/assets/cd6cf96c-c5ae-48d2-9c0f-1dd4a0d29f9d)
 
 
 ## Descripción
