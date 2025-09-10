@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Administrador</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Panel de Administración</h1>
+        <nav>
+            <ul>
+                <li><a href="#" id="nav-productos">Productos</a></li>
+                <li><a href="#" id="nav-usuarios">Usuarios</a></li>
+                <li><a href="index.html">Salir</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <section id="admin-productos">
+            <h2>Gestión de Productos</h2>
+            <button class="admin-btn" onclick="mostrarFormularioProducto()">Nuevo Producto</button>
+            <div id="form-producto" style="display:none;"></div>
+            <div id="lista-productos"></div>
+        </section>
+        <section id="admin-usuarios" style="display:none;">
+            <h2>Gestión de Usuarios</h2>
+            <div id="lista-usuarios"></div>
+        </section>
+    </main>
+    <script src="admin.js"></script>
+</body>
+</html>

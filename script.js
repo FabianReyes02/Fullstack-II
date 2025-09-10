@@ -1,53 +1,18 @@
-// --- Datos de productos ---
-const productos = [
+// --- Productos ---
+// Lee los productos desde localStorage, si no hay, usa los de ejemplo
+const productos = JSON.parse(localStorage.getItem('productos')) || [
     {
         id: 1,
+        codigo: "P001",
         nombre: "Perfume Femenino 1",
         descripcion: "Fragancia floral y elegante para mujer.",
         precio: 19990,
         imagen: "https://http2.mlstatic.com/D_NQ_NP_936463-MLC42018693002_052020-O.webp",
-        categoria: "Femenino"
-    },
-    {
-        id: 2,
-        nombre: "Perfume Masculino 1",
-        descripcion: "Aroma intenso y sofisticado para hombre.",
-        precio: 24990,
-        imagen: "https://www.zonaperfumes.cl/wp-content/uploads/Perfume-Uniquee-Luxury-Mangonifiscent-Extrait-de-Parfum-Unisex.jpg",
-        categoria: "Masculino"
-    },
-    {
-        id: 3,
-        nombre: "Perfume Unisex 1",
-        descripcion: "Fragancia fresca y versátil para todos.",
-        precio: 22990,
-        imagen: "https://cl-dam-resizer.ecomm.cencosud.com/unsafe/adaptive-fit-in/3840x0/filters:quality(75)/cl/paris/207449999/variant/685acb3e2195f7f7e0560930/images/97156a91-67d9-4755-b7b6-c613b09d2117/207449999-0000-001.jpg",
-        categoria: "Unisex"
-    },
-    {
-        id: 4,
-        nombre: "Perfume Infantil 1",
-        descripcion: "Aroma suave y divertido para niños.",
-        precio: 15990,
-        imagen: "https://belcorpchile.vtexassets.com/arquivos/ids/348106/200064310-FotoFondoBlanco.jpg?v=638242189081900000",
-        categoria: "Infantil"
-    },
-    {
-        id: 5,
-        nombre: "Perfume Femenino 2",
-        descripcion: "Perfume dulce y moderno para mujer.",
-        precio: 20990,
-        imagen: "https://belcorpchile.vtexassets.com/arquivos/ids/469488/200111319_Fleur_50ml_galeria1.jpg?v=638923328566500000",
-        categoria: "Femenino"
-    },
-    {
-        id: 6,
-        nombre: "Perfume Masculino 2",
-        descripcion: "Aroma clásico y elegante para hombre.",
-        precio: 25990,
-        imagen: "https://www.maicao.cl/dw/image/v2/BDPM_PRD/on/demandware.static/-/Sites-masterCatalog_Chile/default/dwf5e3a13d/images/large/548418-we-are-tribe-edt.jpg?sw=295&sh=295",
-        categoria: "Masculino"
+        categoria: "Femenino",
+        stock: 10,
+        stockCritico: 2
     }
+    // ...otros productos de ejemplo si quieres...
 ];
 
 // --- Carrito de compras ---
@@ -238,26 +203,38 @@ window.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
-            let valido = true;
+            e.preventDefault();
             const email = loginForm.email.value.trim();
             const password = loginForm.password.value.trim();
             const usuario = JSON.parse(localStorage.getItem('usuario'));
+            const admin = JSON.parse(localStorage.getItem('admin'));
+            let logueado = null;
+
+            // Validación básica
             if (!/^([\w.-]+)@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/.test(email) || email.length > 100) {
-                valido = false;
                 mostrarError(loginForm.email, 'Correo válido requerido (@duoc.cl, @profesor.duoc.cl, @gmail.com, máx 100 caracteres).');
+                return;
             }
             if (password.length < 4 || password.length > 10) {
-                valido = false;
                 mostrarError(loginForm.password, 'Contraseña entre 4 y 10 caracteres.');
+                return;
             }
-            if (!usuario || usuario.email !== email || usuario.password !== password) {
-                valido = false;
-                mostrarError(loginForm.password, 'Usuario o contraseña incorrectos.');
+
+            // Verifica admin
+            if (admin && admin.email === email && admin.password === password) {
+                logueado = admin;
+                localStorage.setItem('usuarioLogueado', JSON.stringify(logueado));
+                window.location.href = "admin.html";
+                return;
             }
-            if (!valido) e.preventDefault();
-            else {
-                localStorage.setItem('usuarioLogueado', JSON.stringify(usuario));
+            // Verifica usuario normal
+            if (usuario && usuario.email === email && usuario.password === password) {
+                logueado = usuario;
+                localStorage.setItem('usuarioLogueado', JSON.stringify(logueado));
+                window.location.href = "index.html";
+                return;
             }
+            mostrarError(loginForm.password, 'Usuario o contraseña incorrectos.');
         });
     }
 
@@ -301,6 +278,65 @@ function mostrarUsuario() {
             userDiv.className = 'usuario-header';
             header.appendChild(userDiv);
         }
-        userDiv.innerHTML = `<img src="${usuario.imagen}" alt="Usuario" class="usuario-img"> <span>${usuario.nombre}</span>`;
+        userDiv.innerHTML = `<img src="https://marketplace.canva.com/A5alg/MAESXCA5alg/1/tl/canva-user-icon-MAESXCA5alg.png" alt="Usuario" class="usuario-img"> <span>${usuario.nombre}</span>`;
     }
 }
+
+// --- Usuario administrador por defecto ---
+const adminDefault = {
+    run: "12345678K",
+    nombre: "Admin",
+    apellidos: "Principal",
+    email: "admin@duoc.cl",
+    password: "admin123",
+    tipo: "Administrador",
+    direccion: "Duoc UC",
+    region: "Región Metropolitana",
+    comuna: "Santiago",
+    nacimiento: "1980-01-01"
+};
+if (!localStorage.getItem('admin')) {
+    localStorage.setItem('admin', JSON.stringify(adminDefault));
+}
+
+// --- Login ---
+window.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = loginForm.email.value.trim();
+            const password = loginForm.password.value.trim();
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+            const admin = JSON.parse(localStorage.getItem('admin'));
+            let logueado = null;
+
+            // Validación básica
+            if (!/^([\w.-]+)@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/.test(email) || email.length > 100) {
+                mostrarError(loginForm.email, 'Correo válido requerido (@duoc.cl, @profesor.duoc.cl, @gmail.com, máx 100 caracteres).');
+                return;
+            }
+            if (password.length < 4 || password.length > 10) {
+                mostrarError(loginForm.password, 'Contraseña entre 4 y 10 caracteres.');
+                return;
+            }
+
+            // Verifica admin
+            if (admin && admin.email === email && admin.password === password) {
+                logueado = admin;
+                localStorage.setItem('usuarioLogueado', JSON.stringify(logueado));
+                window.location.href = "admin.html";
+                return;
+            }
+            // Verifica usuario normal
+            if (usuario && usuario.email === email && usuario.password === password) {
+                logueado = usuario;
+                localStorage.setItem('usuarioLogueado', JSON.stringify(logueado));
+                window.location.href = "index.html";
+                return;
+            }
+            mostrarError(loginForm.password, 'Usuario o contraseña incorrectos.');
+        });
+    }
+    // ...el resto de tu código de tienda y validaciones de usuario...
+});
