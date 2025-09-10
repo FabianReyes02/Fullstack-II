@@ -1,32 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda Online - Fullstack II</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tienda de Perfumes</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Tienda Online</h1>
-        <nav>
-            <ul>
-                <li><a href="index.html">Inicio</a></li>
-                <li><a href="productos.html">Productos</a></li>
-                <li><a href="register.html">Registro</a></li>
-                <li><a href="login.html">Login</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section class="sobre-nosotros">
-            <h2>Sobre Nosotros</h2>
-            <p>Somos PerfumeStore, una empresa líder en la venta de perfumes originales y exclusivos a nivel nacional. Nuestra misión es ofrecer las mejores fragancias del mundo, con atención personalizada y envíos rápidos a todo el país. Contamos con una amplia variedad de marcas reconocidas y productos de alta calidad para todos los gustos. ¡Descubre tu aroma ideal con nosotros!</p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2025 Tienda Online Perfumes</p>
-    </footer>
-    <script src="script.js"></script>
+  <header>
+    <h1>Tienda de Perfumes</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="productos.html">Productos</a></li>
+        <li><a href="register.html">Registrarse</a></li>
+        <li><a href="login.html">Iniciar Sesión</a></li>
+        <li><a href="admin.html">Administración</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="sobre-nosotros">
+      <h2>Sobre Nosotros</h2>
+      <p>Somos una tienda especializada en perfumes exclusivos y de alta calidad. Nos preocupamos por entregarte fragancias únicas y duraderas.</p>
+      
+      <!-- Video embebido -->
+      <div class="video-container">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/7ZtYv0bC4wQ" 
+          title="Video de perfumes" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </section>
+
+    <section class="destacados">
+      <h2>Productos Destacados</h2>
+      <div class="producto">
+        <img src="img/perfume1.jpg" alt="Perfume elegante floral">
+        <h3>Perfume Elegante</h3>
+        <p>$35.990</p>
+      </div>
+      <div class="producto">
+        <img src="img/perfume2.jpg" alt="Perfume intenso masculino">
+        <h3>Perfume Intenso</h3>
+        <p>$45.990</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Tienda de Perfumes</p>
+    <nav>
+      <a href="#">Política de Privacidad</a> |
+      <a href="#">Términos de Uso</a> |
+      <a href="#">Contacto</a>
+    </nav>
+    <div class="social">
+      <a href="#">Facebook</a> |
+      <a href="#">Instagram</a> |
+      <a href="#">Twitter</a>
+    </div>
+  </footer>
 </body>
 </html>

@@ -1,71 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productos - PerfumeStore</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos - Tienda de Perfumes</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Tienda Online</h1>
-        <nav>
-            <ul>
-                <li><a href="index.html">Inicio</a></li>
-                <li><a href="productos.html">Productos</a></li>
-                <li><a href="register.html">Registro</a></li>
-                <li><a href="login.html">Login</a></li>
-            </ul>
-        </nav>
-        <button class="carrito-circulo" id="carrito-circulo" onclick="toggleCarrito()">
-            <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" alt="Carrito" width="32" height="32">
-            <span id="carrito-cantidad">0</span>
-        </button>
-        <div class="carrito-header" id="carrito-header" style="display:none;">
-            <h2>Carrito</h2>
-            <ul id="carrito-list" class="carrito-list"></ul>
-            <p id="carrito-total" class="carrito-total"></p>
-        </div>
-    </header>
-    <main>
-        <aside>
-            <h2>Menú de Categorías</h2>
-            <ul id="menu-categorias">
-                <li><a href="#" onclick="filtrarCategoria('Femenino')">Femenino</a></li>
-                <li><a href="#" onclick="filtrarCategoria('Masculino')">Masculino</a></li>
-                <li><a href="#" onclick="filtrarCategoria('Unisex')">Unisex</a></li>
-                <li><a href="#" onclick="filtrarCategoria('Infantil')">Infantil</a></li>
-                <li><a href="#" onclick="filtrarCategoria('Todos')">Todos</a></li>
-            </ul>
-        </aside>
-        <section class="productos">
-            <div> 
-            <h2>Productos Destacados</h2>
-            <div id="productos-list"></div>
-            </div>
-        </section>
-        <section class="contacto">
-            <h2>Contáctanos</h2>
-            <form id="contacto-form">
-                <label for="nombre">Nombre</label>
-                <input type="text" name="nombre" id="nombre" maxlength="100" required>
-                <!-- Mensaje de error dinámico -->
+  <header>
+    <h1>Productos</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Inicio</a></li>
+        <li><a href="productos.html">Productos</a></li>
+        <li><a href="register.html">Registrarse</a></li>
+        <li><a href="login.html">Iniciar Sesión</a></li>
+        <li><a href="admin.html">Administración</a></li>
+      </ul>
+    </nav>
+  </header>
 
-                <label for="correo">Correo electrónico</label>
-                <input type="email" name="correo" id="correo" maxlength="100" required>
-                <!-- Mensaje de error dinámico -->
+  <main class="catalogo">
+    <aside>
+      <h2>Categorías</h2>
+      <ul>
+        <li><a href="#">Hombre</a></li>
+        <li><a href="#">Mujer</a></li>
+        <li><a href="#">Unisex</a></li>
+      </ul>
+    </aside>
 
-                <label for="comentario">Comentario</label>
-                <textarea name="comentario" id="comentario" maxlength="500" required></textarea>
-                <!-- Mensaje de error dinámico -->
+    <section class="lista-productos">
+      <article class="producto">
+        <img src="img/perfume1.jpg" alt="Perfume floral femenino">
+        <h3>Perfume Floral</h3>
+        <p>$29.990</p>
+        <button>Añadir al carrito</button>
+      </article>
 
-                <button type="submit">Enviar</button>
-            </form>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2025 Tienda Online Perfumes</p>
-    </footer>
-    <script src="script.js"></script>
+      <article class="producto">
+        <img src="img/perfume2.jpg" alt="Perfume cítrico unisex">
+        <h3>Perfume Cítrico</h3>
+        <p>$32.990</p>
+        <button>Añadir al carrito</button>
+      </article>
+
+      <article class="producto">
+        <img src="img/perfume3.jpg" alt="Perfume amaderado masculino">
+        <h3>Perfume Amaderado</h3>
+        <p>$39.990</p>
+        <button>Añadir al carrito</button>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Tienda de Perfumes</p>
+  </footer>
 </body>
 </html>
