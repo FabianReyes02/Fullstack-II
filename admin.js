@@ -32,9 +32,20 @@ function renderProductosAdmin() {
         <div class="producto admin-prod">
             <strong>${p.codigo}</strong> - ${p.nombre} ($${p.precio}) [${p.categoria}]
             <br>Stock: ${p.stock} ${p.stockCritico && p.stock <= p.stockCritico ? '<span class="stock-alert">¡Stock crítico!</span>' : ''}
-            <br><button class="admin-btn" onclick="editarProducto(${i})">Editar</button>
+            <br>
+            <button class="admin-btn" onclick="editarProducto(${i})">Editar</button>
+            <button class="admin-btn" onclick="eliminarProducto(${i})" style="background:#e74c3c;">Eliminar</button>
         </div>
     `).join('');
+}
+
+// --- Eliminar producto ---
+function eliminarProducto(indice) {
+    if (confirm("¿Seguro que quieres eliminar este producto?")) {
+        productos.splice(indice, 1);
+        localStorage.setItem('productos', JSON.stringify(productos));
+        renderProductosAdmin();
+    }
 }
 
 // --- Formulario producto ---
@@ -133,3 +144,4 @@ document.addEventListener('DOMContentLoaded', () => {
 // Expón funciones globalmente para los botones inline
 window.mostrarFormularioProducto = mostrarFormularioProducto;
 window.editarProducto = editarProducto;
+window.eliminarProducto = eliminarProducto;
