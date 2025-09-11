@@ -3,30 +3,39 @@
 
 
 ## Descripción
-Este proyecto es una tienda online de perfumes desarrollada para la Evaluación 1 de Fullstack II. Incluye una vista de productos, carrito de compras, registro, login y formulario de contacto, todo con validaciones y diseño responsivo.
+Este proyecto es una tienda online de perfumes desarrollada para la Evaluación 1 de Fullstack II. Incluye vista de productos, carrito de compras, registro, login, administración de usuarios y productos, y un apartado de contacto, todo con validaciones y diseño responsivo.
 
 ## Estructura del Proyecto
 - **index.html**: Página principal con información sobre la empresa.
-- **productos.html**: Vista de productos, carrito de compras y formulario de contacto.
+- **productos.html**: Vista de productos y carrito de compras.
 - **register.html**: Formulario de registro de usuarios con validaciones.
 - **login.html**: Formulario de inicio de sesión con validaciones.
+- **admin.html**: Panel administrativo para gestionar productos y usuarios.
+- **contactanos.html**: Apartado exclusivo para enviar comentarios y ver los recibidos.
 - **style.css**: Hoja de estilos personalizada y responsiva.
+- **registerstyle.css**: Estilos para el registro de usuarios.
 - **script.js**: Lógica de validación, gestión de productos y carrito de compras.
+- **admin.js**: Lógica de administración de productos, usuarios y comentarios.
 
 ## Funcionalidades
-- **Navegación**: Menú superior en todas las páginas para acceder a Inicio, Productos, Registro y Login.
+- **Navegación**: Menú superior en todas las páginas para acceder a Inicio, Productos, Registro, Login, Admin y Contáctanos.
 - **Productos**: Listado dinámico de perfumes con imágenes, descripción y botón para agregar al carrito.
 - **Carrito de compras**: Permite agregar, quitar y modificar la cantidad de productos. El carrito se muestra en la esquina superior derecha y se guarda en LocalStorage.
 - **Registro de usuarios**: Formulario con validaciones de nombre, correo (solo dominios permitidos) y contraseña.
 - **Login**: Formulario con validaciones de correo y contraseña.
-- **Contacto**: Formulario para enviar consultas, con validaciones de nombre, correo y comentario.
+- **Administración**: Panel para agregar, editar y eliminar productos y usuarios, con validaciones avanzadas (RUN, correo, dirección, región, comuna, etc.).
+- **Contacto**: Apartado exclusivo para enviar consultas/comentarios, que se guardan y muestran debajo del formulario.
 - **Diseño responsivo**: Adaptado para dispositivos móviles y escritorio.
 
 ## Validaciones
+- **RUN**: Requerido, formato sin puntos ni guion, entre 7 y 9 caracteres.
 - **Correo**: Solo se aceptan correos @duoc.cl, @profesor.duoc.cl y @gmail.com.
 - **Contraseña**: Entre 4 y 10 caracteres.
-- **Nombre**: Máximo 100 caracteres.
+- **Nombre**: Máximo 50 caracteres (registro: 100).
+- **Apellidos**: Máximo 100 caracteres.
+- **Dirección**: Máximo 300 caracteres.
 - **Comentario**: Máximo 500 caracteres.
+- **Región y Comuna**: Selección dinámica según datos en JS.
 
 ## Tecnologías Utilizadas
 - HTML5
@@ -46,4 +55,6 @@ Este proyecto es una tienda online de perfumes desarrollada para la Evaluación 
 
 ## Notas
 - El carrito de compras y los productos solo aparecen en la página `productos.html`.
+- El panel de administración permite gestionar productos y usuarios.
+- El apartado "Contáctanos" tiene su propia pestaña y guarda los comentarios enviados.
 - El diseño y las validaciones cumplen con los requisitos de la evaluación.

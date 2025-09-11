@@ -103,10 +103,82 @@ function editarProducto(indice) {
     mostrarFormularioProducto(indice);
 }
 
-// --- Renderizar usuarios ---
+// --- Formulario usuario ---
+function mostrarFormularioUsuario(indice = null) {
+    const u = indice !== null ? usuarios[indice] : {};
+    let opcionesReg = regiones.map(r => `<option value="${r.nombre}" ${u.region===r.nombre?"selected":""}>${r.nombre}</option>`).join('');
+    let opcionesCom = u.region ? regiones.find(r => r.nombre === u.region)?.comunas.map(c => `<option value="${c}" ${u.comuna===c?"selected":""}>${c}</option>`).join('') : '';
+    let opcionesTipo = ["Administrador","Cliente","Vendedor"].map(tipo => `<option value="${tipo}" ${u.tipo===tipo?"selected":""}>${tipo}</option>`).join('');
+    const form = `
+        <form id="form-usuario" class="form-section">
+            <label>RUN: <input name="run" required minlength="7" maxlength="9" pattern="[0-9]{7,8}[kK0-9]" value="${u.run||''}"></label>
+            <label>Nombre: <input name="nombre" required maxlength="50" value="${u.nombre||''}"></label>
+            <label>Apellidos: <input name="apellidos" required maxlength="100" value="${u.apellidos||''}"></label>
+            <label>Correo: <input name="email" required maxlength="100" value="${u.email||''}"></label>
+            <label>Fecha Nacimiento: <input name="nacimiento" type="date" value="${u.nacimiento||''}"></label>
+            <label>Tipo de Usuario:
+                <select name="tipo" required>
+                    <option value="">Seleccione</option>
+                    ${opcionesTipo}
+                </select>
+            </label>
+            <label>Región:
+                <select name="region" required id="select-region">
+                    <option value="">Seleccione</option>
+                    ${opcionesReg}
+                </select>
+            </label>
+            <label>Comuna:
+                <select name="comuna" required id="select-comuna">
+                    <option value="">Seleccione</option>
+                    ${opcionesCom}
+                </select>
+            </label>
+            <label>Dirección: <input name="direccion" required maxlength="300" value="${u.direccion||''}"></label>
+            <button type="submit" class="admin-btn">${indice!==null?"Actualizar":"Crear"}</button>
+        </form>
+    `;
+    document.getElementById('form-usuario').innerHTML = form;
+    document.getElementById('form-usuario').style.display = "block";
+    document.getElementById('form-usuario').onsubmit = function(e) {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target));
+        // Validaciones
+        if (!/^\d{7,8}[kK0-9]$/.test(data.run)) return alert("RUN inválido. Ej: 19011022K, sin puntos ni guion.");
+        if (!data.nombre || data.nombre.length > 50) return alert("Nombre requerido, máx 50.");
+        if (!data.apellidos || data.apellidos.length > 100) return alert("Apellidos requeridos, máx 100.");
+        if (!data.email || data.email.length > 100 || !/^.+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/.test(data.email)) return alert("Correo inválido. Solo @duoc.cl, @profesor.duoc.cl o @gmail.com");
+        if (!data.region) return alert("Seleccione región.");
+        if (!data.comuna) return alert("Seleccione comuna.");
+        if (!data.direccion || data.direccion.length > 300) return alert("Dirección requerida, máx 300.");
+        if (!data.tipo) return alert("Seleccione tipo de usuario.");
+        if (indice !== null) usuarios[indice] = data;
+        else usuarios.push(data);
+        localStorage.setItem('usuario', JSON.stringify(data));
+        document.getElementById('form-usuario').style.display = "none";
+        renderUsuarios();
+    };
+    document.getElementById('select-region').onchange = function() {
+        const region = this.value;
+        const comunas = regiones.find(r => r.nombre === region)?.comunas || [];
+        document.getElementById('select-comuna').innerHTML = `<option value="">Seleccione</option>` + comunas.map(c => `<option value="${c}">${c}</option>`).join('');
+    };
+}
+function editarUsuario(indice) {
+    mostrarFormularioUsuario(indice);
+}
+function eliminarUsuario(indice) {
+    if (confirm("¿Seguro que quieres eliminar este usuario?")) {
+        usuarios.splice(indice, 1);
+        localStorage.setItem('usuario', JSON.stringify(usuarios[0]||null));
+        renderUsuarios();
+    }
+}
+
+// --- Renderizar usuarios (con botones) ---
 function renderUsuarios() {
     const cont = document.getElementById('lista-usuarios');
-    cont.innerHTML = usuarios.map(u => `
+    cont.innerHTML = usuarios.map((u, i) => `
         <div class="admin-user">
             <strong>RUN:</strong> ${u.run||'-'}<br>
             <strong>Nombre:</strong> ${u.nombre} ${u.apellidos||''}<br>
@@ -115,9 +187,12 @@ function renderUsuarios() {
             <strong>Dirección:</strong> ${u.direccion||'-'}<br>
             <strong>Región:</strong> ${u.region||'-'}<br>
             <strong>Comuna:</strong> ${u.comuna||'-'}<br>
-            <strong>Fecha Nacimiento:</strong> ${u.nacimiento||'-'}
+            <strong>Fecha Nacimiento:</strong> ${u.nacimiento||'-'}<br>
+            <button class="admin-btn" onclick="editarUsuario(${i})">Editar</button>
+            <button class="admin-btn" onclick="eliminarUsuario(${i})" style="background:#e74c3c;">Eliminar</button>
         </div>
     `).join('');
+    document.getElementById('form-usuario').style.display = "none";
 }
 
 // --- Navegación y carga inicial ---
@@ -145,3 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.mostrarFormularioProducto = mostrarFormularioProducto;
 window.editarProducto = editarProducto;
 window.eliminarProducto = eliminarProducto;
+window.mostrarFormularioUsuario = mostrarFormularioUsuario;
+window.editarUsuario = editarUsuario;
+window.eliminarUsuario = eliminarUsuario;

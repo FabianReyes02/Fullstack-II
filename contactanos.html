@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Contáctanos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Tienda Online</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="productos.html">Productos</a></li>
+                <li><a href="register.html">Registro</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="contactanos.html" class="active">Contáctanos</a></li>
+            </ul>
+        </nav>
+        <div id="usuario-header" class="usuario-header">
+            <img src="https://marketplace.canva.com/A5alg/MAESXCA5alg/1/tl/canva-user-icon-MAESXCA5alg.png" alt="Usuario" class="usuario-img"> <span id="usuario-nombre-header"></span>
+        </div>
+    </header>
+    <main>
+        <h2>Contáctanos</h2>
+        <div id="contacto-container">
+            <form id="contacto-form" class="form-section">
+                <label>Nombre: <input name="nombre" required maxlength="100"></label>
+                <label>Correo: <input name="correo" required maxlength="100" placeholder="ejemplo@duoc.cl"></label>
+                <label>Comentario: <textarea name="comentario" required maxlength="500"></textarea></label>
+                <button type="submit" class="admin-btn">Enviar</button>
+            </form>
+            <div id="comentarios-lista">
+                <!-- Los comentarios se mostrarán aquí -->
+            </div>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 Tienda Online Perfumes</p>
+    </footer>
+    <script>
+    // --- Contactanos funcionalidad ---
+    const comentarios = JSON.parse(localStorage.getItem('comentarios_contacto')) || [];
+    function renderComentarios() {
+        const lista = document.getElementById('comentarios-lista');
+        if (!lista) return;
+        if (comentarios.length === 0) {
+            lista.innerHTML = '<p>No hay comentarios aún.</p>';
+        } else {
+            lista.innerHTML = comentarios.map(c => `
+                <div class="comentario">
+                    <strong>${c.nombre}</strong> <span style="color:gray;">(${c.correo})</span><br>
+                    <span>${c.comentario}</span>
+                </div>
+            `).join('');
+        }
+    }
+    document.getElementById('contacto-form').onsubmit = function(e) {
+        e.preventDefault();
+        const data = Object.fromEntries(new FormData(e.target));
+        // Validaciones
+        if (!data.nombre || data.nombre.length > 100) return alert('Nombre requerido y máximo 100 caracteres.');
+        if (!/^.+@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/.test(data.correo) || data.correo.length > 100) return alert('Correo válido requerido (@duoc.cl, @profesor.duoc.cl, @gmail.com, máx 100 caracteres).');
+        if (!data.comentario || data.comentario.length > 500) return alert('Comentario requerido y máximo 500 caracteres.');
+        comentarios.push(data);
+        localStorage.setItem('comentarios_contacto', JSON.stringify(comentarios));
+        e.target.reset();
+        renderComentarios();
+    };
+    window.addEventListener('DOMContentLoaded', function() {
+        // Mostrar usuario logueado en el header de contactanos
+        const usuario = JSON.parse(localStorage.getItem('usuarioLogueado'));
+        const nombreSpan = document.getElementById('usuario-nombre-header');
+        if (usuario && nombreSpan) {
+            nombreSpan.textContent = usuario.nombre;
+        } else if (nombreSpan) {
+            nombreSpan.textContent = 'Invitado';
+        }
+        renderComentarios();
+    });
+    </script>
+</body>
+</html>

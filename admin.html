@@ -12,6 +12,7 @@
             <ul>
                 <li><a href="#" id="nav-productos">Productos</a></li>
                 <li><a href="#" id="nav-usuarios">Usuarios</a></li>
+                <li><a href="contactanos.html">Contáctanos</a></li>
                 <li><a href="index.html">Salir</a></li>
             </ul>
         </nav>
@@ -25,6 +26,8 @@
         </section>
         <section id="admin-usuarios" style="display:none;">
             <h2>Gestión de Usuarios</h2>
+            <button class="admin-btn" onclick="mostrarFormularioUsuario()">Nuevo Usuario</button>
+            <div id="form-usuario" style="display:none;"></div>
             <div id="lista-usuarios"></div>
         </section>
     </main>
