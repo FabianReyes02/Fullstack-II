@@ -8,7 +8,7 @@ export default function Layout({ children }) {
   return (
     <div>
       <Header />
-      <main>{children}</main>
+      <main className="main-content container">{children}</main>
       {showCart && <Cart />}
       <footer>
         <p>© 2025 Tienda Online Perfumes</p>

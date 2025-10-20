@@ -4,7 +4,22 @@ import * as productsAPI from '../data/products';
 const CartContext = createContext();
 
 export function useCart() {
-  return useContext(CartContext);
+  const ctx = useContext(CartContext);
+  if (!ctx) {
+    // Devuelve un objeto por defecto para evitar errores cuando el provider
+    // no esté presente (por ejemplo en tests que renderizan componentes aislados).
+    return {
+      cart: [],
+      addToCart: () => {},
+      removeFromCart: () => {},
+      changeQuantity: () => {},
+      totalAmount: () => 0,
+      totalItems: () => 0,
+      showCart: false,
+      setShowCart: () => {},
+    };
+  }
+  return ctx;
 }
 
 export function CartProvider({ children }) {
@@ -23,19 +38,25 @@ export function CartProvider({ children }) {
   }, [cart]);
 
   function addToCart(id) {
+    // nueva firma addToCart(id, cantidad = 1)
+    const cantidad = arguments.length > 1 ? Number(arguments[1]) || 1 : 1;
     const producto = productsAPI.getProduct(id);
     if (!producto) return;
     setCart(prev => {
       const existing = prev.find(i => i.id === id);
       if (existing) {
-        return prev.map(i => i.id === id ? { ...i, cantidad: i.cantidad + 1 } : i);
+        return prev.map(i => i.id === id ? { ...i, cantidad: (i.cantidad || 0) + cantidad } : i);
       }
-      return [...prev, { ...producto, cantidad: 1 }];
+      return [...prev, { ...producto, cantidad }];
     });
   }
 
   function removeFromCart(id) {
     setCart(prev => prev.filter(i => i.id !== id));
+  }
+
+  function clearCart() {
+    setCart([]);
   }
 
   function changeQuantity(id, cantidad) {
@@ -61,6 +82,7 @@ export function CartProvider({ children }) {
     totalItems,
     showCart,
     setShowCart,
+    clearCart,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

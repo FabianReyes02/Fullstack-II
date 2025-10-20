@@ -19,7 +19,7 @@ export default function ProductoCard({ producto, onAdd }) {
       <h3><Link to={`/producto/${producto.id}`}>{nombre}</Link></h3>
       <p>{descripcion}</p>
       <p><strong>${precio}</strong></p>
-      <button onClick={() => onAdd(producto.id)}>Agregar al carrito</button>
+      <button onClick={() => onAdd(producto.id, 1)}>Agregar al carrito</button>
     </div>
   );
 }
