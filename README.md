@@ -63,15 +63,26 @@ Comentario: Máximo 500 caracteres.
 Región y Comuna: Selección dinámica cargada desde el archivo JavaScript.
 
 🧠 Tecnologías Utilizadas
-Tecnología	Descripción	Logo
-HTML5	Estructura del contenido web	<img width="100" alt="HTML5" src="https://github.com/user-attachments/assets/742b3e03-a1ab-47e4-a071-4f5a8d7a2121" />
-CSS3	Diseño, estilos y adaptabilidad responsiva	<img width="100" alt="CSS3" src="https://github.com/user-attachments/assets/52ea21ba-874d-4514-9b26-c37249919d2d" />
-JavaScript	Lógica, validaciones y gestión dinámica de datos	<img width="100" alt="JavaScript" src="https://github.com/user-attachments/assets/ca99480c-6314-4c88-afb2-13997b74ef7b" />
+
+🧩 HTML5
+
+Estructura principal del contenido del sitio web.
+<img src="https://github.com/user-attachments/assets/742b3e03-a1ab-47e4-a071-4f5a8d7a2121" alt="HTML5 Logo" width="120"/>
+
+🎨 CSS3
+
+Aplicación de estilos, diseño responsivo y adaptación a distintos dispositivos.
+<img src="https://github.com/user-attachments/assets/52ea21ba-874d-4514-9b26-c37249919d2d" alt="CSS3 Logo" width="120"/>
+
+⚡ JavaScript
+
+Implementación de la lógica, validaciones de formularios, interacción dinámica y almacenamiento local.
+<img src="https://github.com/user-attachments/assets/ca99480c-6314-4c88-afb2-13997b74ef7b" alt="JavaScript Logo" width="120"/>
 🚀 Cómo Ejecutar el Proyecto
 
 Clona el repositorio:
 
-git clone [URL_DEL_REPOSITORIO]
+git clone (https://github.com/FabianReyes02/Fullstack-II.git)
 
 
 Abre el archivo index.html en tu navegador.
@@ -94,7 +105,7 @@ Este proyecto fue inicializado con Create React App.
 Para más información sobre scripts, compilación y configuración, consulta la documentación oficial
 .
 
-📄 Resumen de Cambios (para informe)
+📄 Resumen de Cambios
 
 Se realizaron mejoras en el documento README con el objetivo de optimizar su estructura, claridad y presentación.
 Los principales cambios fueron los siguientes:
