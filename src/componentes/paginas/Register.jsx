@@ -1,21 +1,63 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
+  const [formData, setFormData] = useState({ nombre: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    // Validaciones
+    if (formData.nombre.length < 3 || formData.nombre.length > 100) {
+      return setError('El nombre debe tener entre 3 y 100 caracteres.');
+    }
+    if (!/^([\w.-]+)@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/.test(formData.email) || formData.email.length > 100) {
+      return setError('Correo inválido. Dominios permitidos: @duoc.cl, @profesor.duoc.cl, @gmail.com.');
+    }
+    if (formData.password.length < 4 || formData.password.length > 10) {
+      return setError('La contraseña debe tener entre 4 y 10 caracteres.');
+    }
+
+    // Lógica de registro
+    const users = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const userExists = users.find(user => user.email === formData.email);
+
+    if (userExists) {
+      return setError('El correo electrónico ya está registrado.');
+    }
+
+    users.push(formData);
+    localStorage.setItem('usuarios', JSON.stringify(users));
+    setSuccess('¡Registro exitoso! Redirigiendo al login...');
+
+    setTimeout(() => {
+      navigate('/login');
+    }, 2000);
+  };
+
   return (
     <section className="form-section">
       <h2>Crear Usuario</h2>
-      <form>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="nombre">Nombre de usuario</label>
-        <input type="text" name="nombre" id="nombre" required />
-
+        <input type="text" name="nombre" id="nombre" value={formData.nombre} onChange={handleChange} required />
         <label htmlFor="email">Correo electrónico</label>
-        <input type="email" name="email" id="email" required />
-
+        <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required />
         <label htmlFor="password">Contraseña</label>
-        <input type="password" name="password" id="password" required />
-
+        <input type="password" name="password" id="password" value={formData.password} onChange={handleChange} required />
         <button type="submit">Registrarse</button>
       </form>
+      {error && <p className="error-message">{error}</p>}
+      {success && <p className="success-message">{success}</p>}
     </section>
   );
 }

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import * as productsAPI from '../../data/products';
 import { useCart } from '../../context/CartContext';
 
 export default function ProductoDetail() {
   const { id } = useParams();
   const [producto, setProducto] = useState(null);
+  const navigate = useNavigate();
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function ProductoDetail() {
       <p>{producto.descripcion || producto.description}</p>
       <p><strong>Precio: ${producto.precio || producto.price}</strong></p>
       <button onClick={() => addToCart(producto.id)}>Agregar al carrito</button>
+      <button onClick={() => navigate(-1)} style={{ marginLeft: '10px' }}>Volver</button>
     </div>
   );
 }

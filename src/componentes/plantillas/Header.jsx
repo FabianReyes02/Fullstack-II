@@ -1,9 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Header() {
   const { totalItems, showCart, setShowCart } = useCart();
+  const { currentUser, logout } = useAuth();
+
   return (
     <header>
       <h1>Tienda Online</h1>
@@ -11,8 +14,17 @@ export default function Header() {
         <ul>
           <li><Link to="/">Inicio</Link></li>
           <li><Link to="/productos">Productos</Link></li>
-          <li><Link to="/register">Registro</Link></li>
-          <li><Link to="/login">Login</Link></li>
+          {currentUser ? (
+            <>
+              <li><span className="welcome-user">Bienvenido, {currentUser.nombre}</span></li>
+              <li><button onClick={logout} className="logout-btn">Cerrar Sesión</button></li>
+            </>
+          ) : (
+            <>
+              <li><Link to="/register">Registro</Link></li>
+              <li><Link to="/login">Login</Link></li>
+            </>
+          )}
           <li><Link to="/contactanos">Contáctanos</Link></li>
         </ul>
       </nav>
