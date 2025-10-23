@@ -5,52 +5,11 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function Header() {
   const { totalItems, showCart, setShowCart } = useCart();
-<<<<<<< HEAD
   const { currentUser, logout } = useAuth();
-
-  return (
-    <header>
-      <h1>Tienda Online</h1>
-      <nav>
-        <ul>
-          <li><Link to="/">Inicio</Link></li>
-          <li><Link to="/productos">Productos</Link></li>
-          {currentUser ? (
-            <>
-              <li><span className="welcome-user">Bienvenido, {currentUser.nombre}</span></li>
-              <li><button onClick={logout} className="logout-btn">Cerrar Sesión</button></li>
-            </>
-          ) : (
-            <>
-              <li><Link to="/register">Registro</Link></li>
-              <li><Link to="/login">Login</Link></li>
-            </>
-          )}
-          <li><Link to="/contactanos">Contáctanos</Link></li>
-        </ul>
-      </nav>
-      <button className="carrito-circulo" onClick={() => setShowCart(!showCart)}>
-        <img src="https://cdn-icons-png.flaticon.com/512/263/263142.png" alt="Carrito" width="32" height="32" />
-        <span id="carrito-cantidad">{totalItems()}</span>
-      </button>
-=======
-  const [user, setUser] = React.useState(() => {
-    try { return JSON.parse(localStorage.getItem('fs_user') || 'null'); } catch (e) { return null; }
-  });
   const navigate = useNavigate();
 
-  React.useEffect(() => {
-    function onAuth() {
-      try { setUser(JSON.parse(localStorage.getItem('fs_user') || 'null')); } catch (e) { setUser(null); }
-    }
-    window.addEventListener('auth-change', onAuth);
-    return () => window.removeEventListener('auth-change', onAuth);
-  }, []);
-
   function handleLogout() {
-    localStorage.removeItem('fs_user');
-    window.dispatchEvent(new Event('auth-change'));
-    setUser(null);
+    logout();
     navigate('/');
   }
 
@@ -67,12 +26,19 @@ export default function Header() {
           <ul>
             <li><Link to="/">Inicio</Link></li>
             <li><Link to="/productos">Productos</Link></li>
-            <li><Link to="/register">Registro</Link></li>
-            {!user && <li><Link to="/login">Login</Link></li>}
+            {currentUser ? (
+              <>
+                {currentUser.isAdmin && <li><Link to="/admin">Admin</Link></li>}
+                <li><span className="welcome-user" style={{color:'#fff', marginLeft:8}}>Bienvenido, <strong style={{color:'#fff'}}>{currentUser.name}</strong></span></li>
+                <li><button type="button" onClick={handleLogout} style={{background:'transparent',color:'#fff',border:'1px solid rgba(255,255,255,0.12)',padding:'6px 8px',borderRadius:6}}>Cerrar Sesión</button></li>
+              </>
+            ) : (
+              <>
+                <li><Link to="/register">Registro</Link></li>
+                <li><Link to="/login">Login</Link></li>
+              </>
+            )}
             <li><Link to="/contactanos">Contáctanos</Link></li>
-            {user && user.isAdmin && <li><Link to="/admin">Admin</Link></li>}
-            {user && <li style={{color:'#fff', marginLeft:8}}>Hola, <strong style={{color:'#fff'}}>{user.name}</strong></li>}
-            {user && <li><button type="button" onClick={handleLogout} style={{background:'transparent',color:'#fff',border:'1px solid rgba(255,255,255,0.12)',padding:'6px 8px',borderRadius:6}}>Cerrar sesión</button></li>}
           </ul>
         </nav>
 
@@ -83,7 +49,6 @@ export default function Header() {
           </button>
         </div>
       </div>
->>>>>>> 227cf16c6409b660023bdc7cbee5153a5d546129
     </header>
   );
 }

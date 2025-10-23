@@ -2,15 +2,16 @@ import React from 'react';
 import { useCart } from '../../context/CartContext';
 
 export default function Cart() {
-  const { cart, removeFromCart, changeQuantity, totalAmount } = useCart();
-  const { clearCart } = useCart();
+  const { cart, removeFromCart, changeQuantity, totalAmount, clearCart } = useCart();
   const [purchased, setPurchased] = React.useState(false);
 
   if (!cart) return null;
 
   function handlePurchase() {
-    if (!cart || cart.length === 0) return alert('El carrito está vacío.');
-    // Simular compra
+    if (!cart || cart.length === 0) {
+      alert('El carrito está vacío.');
+      return;
+    }
     setPurchased(true);
     clearCart();
     setTimeout(() => setPurchased(false), 3000);
@@ -18,24 +19,31 @@ export default function Cart() {
 
   return (
     <div className="carrito">
-      <h2>Carrito</h2>
-      {purchased && <div className="compra-msg">¡Compra realizada! Gracias por tu compra.</div>}
+      <h2 style={{ textAlign: 'center', marginBottom: '1.5rem' }}>Tu Carrito</h2>
+      {purchased && <div className="compra-msg">¡Gracias por tu compra!</div>}
+      {cart.length === 0 && !purchased && <p>Tu carrito está vacío.</p>}
       <ul className="carrito-list">
-        {cart.length === 0 && <li>El carrito está vacío.</li>}
         {cart.map(item => (
           <li key={item.id}>
-            <img src={item.imagen || item.image || 'https://via.placeholder.com/50'} alt={item.nombre || item.name} width={50} height={35} style={{verticalAlign:'middle', borderRadius:4}} />
-            <strong>{item.nombre || item.name}</strong> x
-            <input type="number" min={1} max={99} value={item.cantidad} style={{width:40}} onChange={e => changeQuantity(item.id, e.target.value)} />
-            - ${ (item.precio || item.price) * item.cantidad }
-            <button onClick={() => removeFromCart(item.id)} style={{marginLeft:8}}>Quitar</button>
+            <img src={item.imagen || item.image || 'https://via.placeholder.com/50'} alt={item.nombre || item.name} width={60} height={60} style={{ borderRadius: '8px' }} />
+            <div style={{ flexGrow: 1 }}>
+              <strong>{item.nombre || item.name}</strong>
+              <div>${item.precio || item.price} x <input type="number" min={1} value={item.cantidad} onChange={e => changeQuantity(item.id, e.target.value)} /></div>
+            </div>
+            <button onClick={() => removeFromCart(item.id)}>Eliminar</button>
           </li>
         ))}
       </ul>
-      <p className="carrito-total">Total: ${totalAmount()}</p>
-      <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
-        <button className="admin-btn" onClick={handlePurchase}>Comprar</button>
-      </div>
+      {cart.length > 0 && (
+        <>
+          <div className="carrito-total">
+            Total: ${totalAmount()}
+          </div>
+          <button onClick={handlePurchase} style={{ width: '100%', marginTop: '1rem' }}>
+            Finalizar Compra
+          </button>
+        </>
+      )}
     </div>
   );
 }

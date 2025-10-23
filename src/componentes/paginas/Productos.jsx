@@ -6,45 +6,52 @@ import ProductoCard from '../moleculas/ProductoCard';
 export default function Productos() {
   const [productos, setProductos] = useState([]);
   const [categoria, setCategoria] = useState('Todos');
-  const { addToCart, setShowCart } = useCart();
+  const [busqueda, setBusqueda] = useState('');
+  const { addToCart } = useCart();
 
   useEffect(() => {
-    setProductos(productsAPI.getAllProducts());
-  }, []);
+    let all = productsAPI.getAllProducts();
 
-  useEffect(() => {
-    const all = productsAPI.getAllProducts();
-    if (categoria === 'Todos') setProductos(all);
-    else setProductos(all.filter(p => (p.category || p.categoria) === categoria));
-  }, [categoria]);
+    if (categoria !== 'Todos') {
+      all = all.filter(p => (p.category || p.categoria) === categoria);
+    }
+
+    if (busqueda) {
+      all = all.filter(p => p.name.toLowerCase().includes(busqueda.toLowerCase()));
+    }
+
+    setProductos(all);
+  }, [categoria, busqueda]);
 
   const categorias = Array.from(new Set(productsAPI.getAllProducts().map(p => p.category || p.categoria))).filter(Boolean);
 
   return (
-    <div className="productos-page container">
-      <aside className="productos-aside">
-        <h2>Menú de Categorías</h2>
-        <ul id="menu-categorias">
-          {categorias.map(cat => (
-            <li key={cat}><button type="button" onClick={() => setCategoria(cat)} className={categoria === cat ? 'active' : ''}>{cat}</button></li>
-          ))}
-          <li><button type="button" onClick={() => setCategoria('Todos')} className={categoria === 'Todos' ? 'active' : ''}>Todos</button></li>
-        </ul>
-        <div style={{marginTop:12}}>
-          <button type="button" onClick={() => setShowCart(true)}>Ver carrito</button>
-        </div>
-      </aside>
-      <section className="productos">
-        <div>
-          <h2>Productos</h2>
-          <div id="productos-list" className="productos-grid">
-            {productos.length === 0 && <p>No hay productos aún.</p>}
-            {productos.map(p => (
-              <ProductoCard key={p.id} producto={p} onAdd={addToCart} />
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="container">
+      <h2 style={{ textAlign: 'center', margin: '2rem 0' }}>Nuestros Perfumes</h2>
+      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <input
+          type="text"
+          placeholder="Buscar perfumes..."
+          value={busqueda}
+          onChange={e => setBusqueda(e.target.value)}
+          style={{ marginRight: '1rem', padding: '0.5rem' }}
+        />
+        <button onClick={() => setCategoria('Todos')} className={categoria === 'Todos' ? 'active' : ''}>Todos</button>
+        {categorias.map(cat => (
+          <button key={cat} onClick={() => setCategoria(cat)} className={categoria === cat ? 'active' : ''} style={{ marginLeft: '1rem' }}>
+            {cat}
+          </button>
+        ))}
+      </div>
+      <div className="productos-grid">
+        {productos.length > 0 ? (
+          productos.map(p => (
+            <ProductoCard key={p.id} producto={p} onAdd={addToCart} />
+          ))
+        ) : (
+          <p>No hay productos en esta categoría.</p>
+        )}
+      </div>
     </div>
   );
 }

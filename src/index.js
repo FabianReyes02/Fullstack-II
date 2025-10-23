@@ -5,7 +5,6 @@ import './style.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 import { CartProvider } from './context/CartContext';
-import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -15,5 +14,3 @@ root.render(
     </CartProvider>
   </React.StrictMode>
 );
-
-reportWebVitals();

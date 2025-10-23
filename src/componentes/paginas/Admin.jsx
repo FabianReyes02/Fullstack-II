@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-=======
-import { Link, useNavigate } from 'react-router-dom';
 import * as productsAPI from '../../data/products';
+import { useAuth } from '../../context/AuthContext';
 
 function UserForm({ onCreate }) {
   const [u, setU] = React.useState({ name: '', email: '' });
@@ -16,59 +13,30 @@ function UserForm({ onCreate }) {
   }
   return (
     <form onSubmit={submit} className="admin-form">
-      <label>Nombre: <input value={u.name} onChange={e => setU({...u, name: e.target.value})} /></label>
-      <label>Email: <input value={u.email} onChange={e => setU({...u, email: e.target.value})} required /></label>
-      <label>Contraseña: <input type="password" value={u.password || ''} onChange={e => setU({...u, password: e.target.value})} required /></label>
+      <label>Nombre: <input value={u.name} onChange={e => setU({ ...u, name: e.target.value })} /></label>
+      <label>Email: <input value={u.email} onChange={e => setU({ ...u, email: e.target.value })} required /></label>
+      <label>Contraseña: <input type="password" value={u.password || ''} onChange={e => setU({ ...u, password: e.target.value })} required /></label>
       <div className="admin-compact-actions"><button type="submit">Crear Usuario</button></div>
     </form>
   );
 }
->>>>>>> 227cf16c6409b660023bdc7cbee5153a5d546129
 
 export default function Admin() {
   const navigate = useNavigate();
   const [view, setView] = useState('productos');
-<<<<<<< HEAD
-  const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!currentUser || currentUser.email !== 'admin@duoc.cl') {
-      navigate('/');
-    }
-  }, [currentUser, navigate]);
-
-  return currentUser && currentUser.email === 'admin@duoc.cl' ? (
-    <div>
-      <header>
-        <h1>Panel de Administración</h1>
-        <nav>
-          <ul>
-            <li><button onClick={() => setView('productos')}>Productos</button></li>
-            <li><button onClick={() => setView('usuarios')}>Usuarios</button></li>
-            <li><button onClick={logout} className="logout-btn">Salir</button></li>
-          </ul>
-        </nav>
-      </header>
-=======
   const [productos, setProductos] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', description: '', price: 0, category: '', image: '' });
+  const [errors, setErrors] = useState({ name: '', price: '' }); // State for form errors
+  const { currentUser, logout } = useAuth();
 
   useEffect(() => {
-    setProductos(productsAPI.getAllProducts());
-  }, []);
-
-  // protección simple: solo admin puede entrar
-  useEffect(() => {
-    try {
-      const u = JSON.parse(localStorage.getItem('fs_user') || 'null');
-      if (!u || !u.isAdmin) {
-        // redirigir al home si no es admin
-        navigate('/');
-      }
-    } catch (e) { navigate('/'); }
-  }, [navigate]);
+    if (!currentUser || !currentUser.isAdmin) {
+      navigate('/');
+    } else {
+      setProductos(productsAPI.getAllProducts());
+    }
+  }, [currentUser, navigate]);
 
   function refresh() {
     setProductos(productsAPI.getAllProducts());
@@ -76,11 +44,30 @@ export default function Admin() {
 
   function onCreate(e) {
     e.preventDefault();
+    // Reset errors
+    setErrors({ name: '', price: '' });
+
+    // Basic validation
+    if (!form.name.trim()) {
+      setErrors(prev => ({ ...prev, name: 'El nombre del producto es requerido.' }));
+      return;
+    }
+    if (isNaN(form.price) || form.price <= 0) {
+      setErrors(prev => ({ ...prev, price: 'El precio debe ser un número positivo.' }));
+      return;
+    }
+    if (!form.category) {
+      // This case should ideally be handled by the select's 'required' attribute,
+      // but adding a fallback error message is good practice.
+      setErrors(prev => ({ ...prev, category: 'La categoría es requerida.' }));
+      return;
+    }
+
     const payload = {
-      name: form.name || 'Sin nombre',
+      name: form.name.trim(),
       description: form.description || '',
-      price: Number(form.price) || 0,
-      category: form.category || 'Otros',
+      price: Number(form.price),
+      category: form.category,
       image: form.image || '',
     };
     productsAPI.createProduct(payload);
@@ -95,21 +82,37 @@ export default function Admin() {
     refresh();
   }
 
-  // editar producto
   const [editing, setEditing] = useState(null);
   function onStartEdit(prod) {
     setEditing(prod.id);
     setForm({ name: prod.name, description: prod.description, price: prod.price, category: prod.category, image: prod.image });
     setShowForm(true);
+    // Clear errors when starting edit
+    setErrors({ name: '', price: '' });
   }
 
   function onSaveEdit(e) {
     e.preventDefault();
     if (!editing) return;
+
+    // Basic validation for edits
+    if (!form.name.trim()) {
+      setErrors(prev => ({ ...prev, name: 'El nombre del producto es requerido.' }));
+      return;
+    }
+    if (isNaN(form.price) || form.price <= 0) {
+      setErrors(prev => ({ ...prev, price: 'El precio debe ser un número positivo.' }));
+      return;
+    }
+    if (!form.category) {
+      setErrors(prev => ({ ...prev, category: 'La categoría es requerida.' }));
+      return;
+    }
+
     productsAPI.updateProduct(editing, {
-      name: form.name,
+      name: form.name.trim(),
       description: form.description,
-      price: Number(form.price) || 0,
+      price: Number(form.price),
       category: form.category,
       image: form.image,
     });
@@ -119,7 +122,6 @@ export default function Admin() {
     refresh();
   }
 
-  // Usuarios simples en localStorage
   const USERS_KEY = 'fs_users_v1';
   const [usuarios, setUsuarios] = useState([]);
   useEffect(() => {
@@ -148,9 +150,12 @@ export default function Admin() {
     refreshUsers();
   }
 
+  if (!currentUser || !currentUser.isAdmin) {
+    return null;
+  }
+
   return (
     <div className="admin-page container admin-card" >
->>>>>>> 227cf16c6409b660023bdc7cbee5153a5d546129
       <main>
         <div className="admin-toolbar">
           <div>
@@ -161,7 +166,7 @@ export default function Admin() {
             <ul className="admin-nav admin-nav-list">
               <li><button type="button" className={view === 'productos' ? 'active' : ''} onClick={() => setView('productos')}>Productos</button></li>
               <li><button type="button" className={view === 'usuarios' ? 'active' : ''} onClick={() => setView('usuarios')}>Usuarios</button></li>
-              <li><button className="admin-logout" type="button" onClick={() => { localStorage.removeItem('fs_user'); window.dispatchEvent(new Event('auth-change')); window.location.href = '/'; }}>Cerrar sesión</button></li>
+              <li><button className="admin-logout" type="button" onClick={logout}>Cerrar sesión</button></li>
             </ul>
           </nav>
         </div>
@@ -175,13 +180,19 @@ export default function Admin() {
 
             {showForm && (
               <form className="admin-form" onSubmit={editing ? onSaveEdit : onCreate}>
-                <label>Nombre: <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} required /></label>
-                <label>Descripción: <input value={form.description} onChange={e => setForm({...form, description: e.target.value})} /></label>
-                <label>Precio: <input type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})} /></label>
-                <label>Categoría: <input value={form.category} onChange={e => setForm({...form, category: e.target.value})} /></label>
-                <label>Imagen (URL): <input value={form.image} onChange={e => setForm({...form, image: e.target.value})} /></label>
-                <div style={{marginTop:8}}>
-                  <button type="submit">{editing ? 'Guardar' : 'Crear'}</button>
+                <label>Nombre: <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></label>
+                <label>Descripción: <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>
+                <label>Precio: <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></label>
+                <label>Categoría:
+                  <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} required>
+                    <option value="">Selecciona una categoría</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Masculino">Masculino</option>
+                  </select>
+                </label>
+                <label>Imagen (URL): <input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} /></label>
+                <div style={{ marginTop: 8 }}>
+                  <button type="submit" className="admin-btn">{editing ? 'Guardar' : 'Crear'}</button>
                 </div>
               </form>
             )}
@@ -191,12 +202,12 @@ export default function Admin() {
               {productos.map(p => (
                 <div key={p.id} className="admin-item">
                   <div>
-                    <strong>{p.name}</strong> <span style={{color:'gray'}}>({p.category})</span>
+                    <strong>{p.name}</strong> <span style={{ color: 'gray' }}>({p.category})</span>
                     <div className="admin-desc">{p.description}</div>
                   </div>
                   <div className="admin-actions">
-                    <button type="button" onClick={() => onStartEdit(p)}>Editar</button>
-                    <button type="button" onClick={() => onDelete(p.id)}>Eliminar</button>
+                    <button type="button" className="admin-btn" onClick={() => onStartEdit(p)}>Editar</button>
+                    <button type="button" className="admin-btn" onClick={() => onDelete(p.id)}>Eliminar</button>
                   </div>
                 </div>
               ))}
@@ -219,7 +230,7 @@ export default function Admin() {
                     <div className="admin-desc">{u.email}</div>
                   </div>
                   <div className="admin-actions">
-                    <button type="button" onClick={() => deleteUser(u.id)}>Eliminar</button>
+                    <button type="button" className="admin-btn" onClick={() => deleteUser(u.id)}>Eliminar</button>
                   </div>
                 </div>
               ))}
@@ -228,5 +239,5 @@ export default function Admin() {
         )}
       </main>
     </div>
-  ) : null; // O un componente de "Cargando..." o "No autorizado"
+  );
 }
