@@ -3,12 +3,23 @@ import { useCart } from '../../context/CartContext';
 
 export default function Cart() {
   const { cart, removeFromCart, changeQuantity, totalAmount } = useCart();
+  const { clearCart } = useCart();
+  const [purchased, setPurchased] = React.useState(false);
 
   if (!cart) return null;
+
+  function handlePurchase() {
+    if (!cart || cart.length === 0) return alert('El carrito está vacío.');
+    // Simular compra
+    setPurchased(true);
+    clearCart();
+    setTimeout(() => setPurchased(false), 3000);
+  }
 
   return (
     <div className="carrito">
       <h2>Carrito</h2>
+      {purchased && <div className="compra-msg">¡Compra realizada! Gracias por tu compra.</div>}
       <ul className="carrito-list">
         {cart.length === 0 && <li>El carrito está vacío.</li>}
         {cart.map(item => (
@@ -22,6 +33,9 @@ export default function Cart() {
         ))}
       </ul>
       <p className="carrito-total">Total: ${totalAmount()}</p>
+      <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+        <button className="admin-btn" onClick={handlePurchase}>Comprar</button>
+      </div>
     </div>
   );
 }

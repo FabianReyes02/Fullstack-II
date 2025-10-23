@@ -12,6 +12,20 @@ import ProductoDetail from './componentes/paginas/ProductoDetail';
 import './style.css';
 
 function App() {
+  React.useEffect(() => {
+    try {
+      const key = 'fs_users_v1';
+      const raw = localStorage.getItem(key) || '[]';
+      const all = JSON.parse(raw);
+      const exists = all.some(u => String(u.email).toLowerCase() === 'admin@duoc.cl');
+      if (!exists) {
+        all.push({ id: Math.max(0, ...all.map(x => x.id || 0)) + 1, name: 'admin', email: 'admin@duoc.cl', password: 'admin123', isAdmin: true });
+        localStorage.setItem(key, JSON.stringify(all));
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
   return (
     <BrowserRouter>
       <AuthProvider>
