@@ -1,59 +1,36 @@
-const STORAGE_KEY = 'fs_products_v1';
+const API = '';
 
-const initial = [
-  { id: 1, name: 'Perfume A', description: 'Fragancia floral', price: 19990, category: 'Femenino', image: '' },
-  { id: 2, name: 'Perfume B', description: 'Aroma amaderado', price: 24990, category: 'Masculino', image: '' },
-];
-
-function load() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-    return initial.slice();
-  }
-  try {
-    return JSON.parse(raw);
-  } catch (e) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initial));
-    return initial.slice();
-  }
+export async function getAllProducts() {
+  const res = await fetch('/api/products');
+  if (!res.ok) throw new Error('Failed to load products');
+  return res.json();
 }
 
-function save(items) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+export async function getProduct(id) {
+  const res = await fetch(`/api/products/${id}`);
+  if (!res.ok) return null;
+  return res.json();
 }
 
-export function getAllProducts() {
-  return load();
+export async function createProduct(data) {
+  const token = localStorage.getItem('fs_token');
+  const res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error('Create failed');
+  return res.json();
 }
 
-export function getProduct(id) {
-  return load().find(p => p.id === id) || null;
+export async function updateProduct(id, changes) {
+  const token = localStorage.getItem('fs_token');
+  const res = await fetch(`/api/products/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(changes) });
+  if (!res.ok) throw new Error('Update failed');
+  return res.json();
 }
 
-export function createProduct(data) {
-  const items = load();
-  const id = Math.max(0, ...items.map(i => i.id)) + 1;
-  const prod = { id, ...data };
-  items.push(prod);
-  save(items);
-  return prod;
-}
-
-export function updateProduct(id, changes) {
-  const items = load();
-  const idx = items.findIndex(i => i.id === id);
-  if (idx === -1) return null;
-  items[idx] = { ...items[idx], ...changes };
-  save(items);
-  return items[idx];
-}
-
-export function deleteProduct(id) {
-  const items = load();
-  const filtered = items.filter(i => i.id !== id);
-  save(filtered);
-  return filtered;
+export async function deleteProduct(id) {
+  const token = localStorage.getItem('fs_token');
+  const res = await fetch(`/api/products/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+  if (!res.ok) throw new Error('Delete failed');
+  return res.json();
 }
 
 export default { getAllProducts, getProduct, createProduct, updateProduct, deleteProduct };

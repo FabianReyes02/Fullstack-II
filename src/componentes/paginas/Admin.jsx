@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as productsAPI from '../../data/products';
 import { useAuth } from '../../context/AuthContext';
+import { encryptPassword } from '../../utils/crypto';
 
 function UserForm({ onCreate }) {
   const [u, setU] = React.useState({ name: '', email: '' });
@@ -34,12 +35,28 @@ export default function Admin() {
     if (!currentUser || !currentUser.isAdmin) {
       navigate('/');
     } else {
-      setProductos(productsAPI.getAllProducts());
+      (async () => {
+        try {
+          const list = await productsAPI.getAllProducts();
+          setProductos(list);
+        } catch (err) {
+          console.error('Failed to load products', err);
+          setProductos([]);
+        }
+      })();
     }
   }, [currentUser, navigate]);
 
   function refresh() {
-    setProductos(productsAPI.getAllProducts());
+    (async () => {
+      try {
+        const list = await productsAPI.getAllProducts();
+        setProductos(list);
+      } catch (err) {
+        console.error('Failed to refresh products', err);
+        setProductos([]);
+      }
+    })();
   }
 
   function onCreate(e) {
@@ -68,18 +85,32 @@ export default function Admin() {
       description: form.description || '',
       price: Number(form.price),
       category: form.category,
-      image: form.image || '',
+      image_url: form.image || '',
+      stock: 0
     };
-    productsAPI.createProduct(payload);
-    setForm({ name: '', description: '', price: 0, category: '', image: '' });
-    setShowForm(false);
-    refresh();
+    (async () => {
+      try {
+        await productsAPI.createProduct(payload);
+        setForm({ name: '', description: '', price: 0, category: '', image: '' });
+        setShowForm(false);
+        refresh();
+      } catch (err) {
+        alert('Error creando producto');
+        console.error(err);
+      }
+    })();
   }
 
   function onDelete(id) {
     if (!window.confirm('Eliminar producto?')) return;
-    productsAPI.deleteProduct(id);
-    refresh();
+    (async () => {
+      try {
+        await productsAPI.deleteProduct(id);
+        refresh();
+      } catch (err) {
+        alert('Error eliminando producto');
+      }
+    })();
   }
 
   const [editing, setEditing] = useState(null);
@@ -109,17 +140,23 @@ export default function Admin() {
       return;
     }
 
-    productsAPI.updateProduct(editing, {
-      name: form.name.trim(),
-      description: form.description,
-      price: Number(form.price),
-      category: form.category,
-      image: form.image,
-    });
-    setEditing(null);
-    setForm({ name: '', description: '', price: 0, category: '', image: '' });
-    setShowForm(false);
-    refresh();
+    (async () => {
+      try {
+        await productsAPI.updateProduct(editing, {
+          name: form.name.trim(),
+          description: form.description,
+          price: Number(form.price),
+          category: form.category,
+          image_url: form.image,
+        });
+        setEditing(null);
+        setForm({ name: '', description: '', price: 0, category: '', image: '' });
+        setShowForm(false);
+        refresh();
+      } catch (err) {
+        alert('Error guardando cambios');
+      }
+    })();
   }
 
   const USERS_KEY = 'fs_users_v1';
@@ -135,13 +172,34 @@ export default function Admin() {
     try { setUsuarios(JSON.parse(localStorage.getItem(USERS_KEY) || '[]')); } catch (e) { setUsuarios([]); }
   }
 
-  function createUser(u) {
-    const all = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-    const id = Math.max(0, ...all.map(x => x.id || 0)) + 1;
-    const nu = { id, name: u.name || '', email: u.email, password: u.password || '', isAdmin: u.isAdmin || false };
-    all.push(nu);
-    localStorage.setItem(USERS_KEY, JSON.stringify(all));
-    refreshUsers();
+  async function createUser(u) {
+    // try server-side creation via /register (requires admin token and encrypted password)
+    const token = localStorage.getItem('fs_token');
+    const payload = {
+      username: u.name || '',
+      email: u.email,
+      password: encryptPassword(u.password || '')
+    };
+    try {
+      if (!token) throw new Error('No token');
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error('Server error');
+      // refresh users list from server
+      refreshUsers();
+      return;
+    } catch (err) {
+      console.warn('Server createUser failed, falling back to localStorage', err);
+      const all = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+      const id = Math.max(0, ...all.map(x => x.id || 0)) + 1;
+      const nu = { id, name: u.name || '', email: u.email, password: u.password || '', isAdmin: u.isAdmin || false };
+      all.push(nu);
+      localStorage.setItem(USERS_KEY, JSON.stringify(all));
+      refreshUsers();
+    }
   }
 
   function deleteUser(id) {

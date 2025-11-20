@@ -10,30 +10,38 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
-    try {
-      const user = JSON.parse(localStorage.getItem('fs_user'));
-      if (user) {
-        setCurrentUser(user);
+    async function init() {
+      try {
+        const token = localStorage.getItem('fs_token');
+        if (!token) return;
+        const res = await fetch('/api/auth/profile', { headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) { localStorage.removeItem('fs_token'); return; }
+        const data = await res.json();
+        setCurrentUser({ ...data.user, token });
+      } catch (error) {
+        console.error("Failed to load profile", error);
       }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
     }
+    init();
   }, []);
 
   const login = (email, password) => {
-    let user;
-    if (email === 'admin@admin.cl' && password === 'admin123') {
-      user = { email: email, isAdmin: true };
-    } else {
-      user = { email: email, isAdmin: false };
-    }
-    localStorage.setItem('fs_user', JSON.stringify(user));
-    setCurrentUser(user);
-    return user; // Return user for potential testing assertions
+    return fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    }).then(async res => {
+      if (!res.ok) throw new Error('Invalid credentials');
+      const data = await res.json();
+      localStorage.setItem('fs_token', data.token);
+      const user = { ...data.user, token: data.token };
+      setCurrentUser(user);
+      return user;
+    });
   };
 
   const logout = () => {
-    localStorage.removeItem('fs_user');
+    localStorage.removeItem('fs_token');
     setCurrentUser(null);
   };
 

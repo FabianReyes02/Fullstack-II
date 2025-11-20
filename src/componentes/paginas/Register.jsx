@@ -27,21 +27,24 @@ export default function Register() {
       return setError('La contraseña debe tener entre 4 y 10 caracteres.');
     }
 
-    // Lógica de registro
-    const users = JSON.parse(localStorage.getItem('usuarios')) || [];
-    const userExists = users.find(user => user.email === formData.email);
-
-    if (userExists) {
-      return setError('El correo electrónico ya está registrado.');
-    }
-
-    users.push(formData);
-    localStorage.setItem('usuarios', JSON.stringify(users));
-    setSuccess('¡Registro exitoso! Redirigiendo al login...');
-
-    setTimeout(() => {
-      navigate('/login');
-    }, 2000);
+    // Enviar al backend
+    (async () => {
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: formData.nombre, email: formData.email, password: formData.password })
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          return setError(err.error || 'Error registrando');
+        }
+        setSuccess('¡Registro exitoso! Redirigiendo al login...');
+        setTimeout(() => navigate('/login'), 1500);
+      } catch (err) {
+        setError('Error de conexión al servidor');
+      }
+    })();
   };
 
   return (

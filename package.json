@@ -38,6 +38,7 @@
     "test:karma:single": "karma start --single-run",
     "eject": "react-scripts eject"
   },
+  "proxy": "http://localhost:5000",
   "eslintConfig": {
     "extends": [
       "react-app",
