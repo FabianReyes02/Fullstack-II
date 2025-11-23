@@ -25,27 +25,32 @@ function UserForm({ onCreate }) {
 export default function Admin() {
   const navigate = useNavigate();
   const [view, setView] = useState('productos');
+  const [announcements, setAnnouncements] = useState([]);
+  const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+  const [announcementForm, setAnnouncementForm] = useState({ text: '', active: true, starts_at: '', ends_at: '' });
   const [productos, setProductos] = useState([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', price: 0, category: '', image: '' });
-  const [errors, setErrors] = useState({ name: '', price: '' }); // State for form errors
+  const [form, setForm] = useState({ name: '', description: '', price: 0, category: '', image: '', stock: 0 });
+  const [errors, setErrors] = useState({ name: '', price: '', stock: '' }); // State for form errors
   const { currentUser, logout } = useAuth();
+  // Determinar usuario activo y si es admin (soporta fallback en localStorage)
+  let storedUser = null;
+  try { storedUser = JSON.parse(localStorage.getItem('usuarioLogueado') || 'null'); } catch (e) { storedUser = null; }
+  const activeUser = currentUser || storedUser || null;
+  const isAdmin = !!(activeUser && (activeUser.isAdmin || String(activeUser.email || '').toLowerCase() === 'admin@duoc.cl'));
 
   useEffect(() => {
-    if (!currentUser || !currentUser.isAdmin) {
-      navigate('/');
-    } else {
-      (async () => {
-        try {
-          const list = await productsAPI.getAllProducts();
-          setProductos(list);
-        } catch (err) {
-          console.error('Failed to load products', err);
-          setProductos([]);
-        }
-      })();
-    }
-  }, [currentUser, navigate]);
+    if (!isAdmin) return;
+    (async () => {
+      try {
+        const list = await productsAPI.getAllProducts();
+        setProductos(list);
+      } catch (err) {
+        console.error('Failed to load products', err);
+        setProductos([]);
+      }
+    })();
+  }, [isAdmin]);
 
   function refresh() {
     (async () => {
@@ -73,6 +78,10 @@ export default function Admin() {
       setErrors(prev => ({ ...prev, price: 'El precio debe ser un número positivo.' }));
       return;
     }
+    if (isNaN(form.stock) || Number(form.stock) < 0) {
+      setErrors(prev => ({ ...prev, stock: 'El stock debe ser un número entero igual o mayor a 0.' }));
+      return;
+    }
     if (!form.category) {
       // This case should ideally be handled by the select's 'required' attribute,
       // but adding a fallback error message is good practice.
@@ -86,12 +95,12 @@ export default function Admin() {
       price: Number(form.price),
       category: form.category,
       image_url: form.image || '',
-      stock: 0
+      stock: Number(form.stock) || 0
     };
     (async () => {
       try {
         await productsAPI.createProduct(payload);
-        setForm({ name: '', description: '', price: 0, category: '', image: '' });
+          setForm({ name: '', description: '', price: 0, category: '', image: '', stock: 0 });
         setShowForm(false);
         refresh();
       } catch (err) {
@@ -116,10 +125,17 @@ export default function Admin() {
   const [editing, setEditing] = useState(null);
   function onStartEdit(prod) {
     setEditing(prod.id);
-    setForm({ name: prod.name, description: prod.description, price: prod.price, category: prod.category, image: prod.image });
+    setForm({
+      name: prod.name || prod.nombre || '',
+      description: prod.description || prod.descripcion || '',
+      price: prod.price ?? prod.precio ?? 0,
+      category: prod.category || prod.categoria || '',
+      image: prod.image || prod.image_url || prod.imagen || prod.imageUrl || prod.src || '',
+      stock: prod.stock ?? prod.cantidad ?? 0
+    });
     setShowForm(true);
     // Clear errors when starting edit
-    setErrors({ name: '', price: '' });
+    setErrors({ name: '', price: '', stock: '' });
   }
 
   function onSaveEdit(e) {
@@ -135,6 +151,10 @@ export default function Admin() {
       setErrors(prev => ({ ...prev, price: 'El precio debe ser un número positivo.' }));
       return;
     }
+    if (isNaN(form.stock) || Number(form.stock) < 0) {
+      setErrors(prev => ({ ...prev, stock: 'El stock debe ser un número entero igual o mayor a 0.' }));
+      return;
+    }
     if (!form.category) {
       setErrors(prev => ({ ...prev, category: 'La categoría es requerida.' }));
       return;
@@ -148,9 +168,10 @@ export default function Admin() {
           price: Number(form.price),
           category: form.category,
           image_url: form.image,
+          stock: Number(form.stock) || 0,
         });
         setEditing(null);
-        setForm({ name: '', description: '', price: 0, category: '', image: '' });
+        setForm({ name: '', description: '', price: 0, category: '', image: '', stock: 0 });
         setShowForm(false);
         refresh();
       } catch (err) {
@@ -162,14 +183,146 @@ export default function Admin() {
   const USERS_KEY = 'fs_users_v1';
   const [usuarios, setUsuarios] = useState([]);
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(USERS_KEY) || '[]';
-      setUsuarios(JSON.parse(raw));
-    } catch (e) { setUsuarios([]); }
+    async function loadUsers() {
+      // Intenta obtener usuarios del servidor primero (si existe endpoint público o permite lista)
+      try {
+        const tryRes = await fetch('/api/users');
+        if (tryRes.ok) {
+          const data = await tryRes.json();
+          const list = Array.isArray(data) ? data : data.users || data;
+          setUsuarios(list || []);
+          return;
+        }
+      } catch (e) {
+        // ignore and fallback to token-based or localStorage
+      }
+
+      // Si hay token, intentar con autorización
+      try {
+        const token = localStorage.getItem('fs_token');
+        if (token) {
+          const res = await fetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : data.users || data;
+            setUsuarios(list || []);
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // Fallback a localStorage
+      try {
+        const raw = localStorage.getItem(USERS_KEY) || '[]';
+        setUsuarios(JSON.parse(raw));
+      } catch (e) { setUsuarios([]); }
+    }
+    loadUsers();
   }, []);
 
   function refreshUsers() {
-    try { setUsuarios(JSON.parse(localStorage.getItem(USERS_KEY) || '[]')); } catch (e) { setUsuarios([]); }
+    (async () => {
+      try {
+        const res = await fetch('/api/users');
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data) ? data : data.users || data;
+          setUsuarios(list || []);
+          return;
+        }
+      } catch (e) { /* ignore */ }
+
+      try { setUsuarios(JSON.parse(localStorage.getItem(USERS_KEY) || '[]')); } catch (e) { setUsuarios([]); }
+    })();
+  }
+
+  async function loadAnnouncements() {
+    try {
+      const token = localStorage.getItem('fs_token');
+      const res = await fetch('/api/announcements', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) throw new Error('No autorizado');
+      const data = await res.json();
+      setAnnouncements(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.warn('Failed to load announcements', err);
+      setAnnouncements([]);
+    }
+  }
+
+  const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  async function loadOrders() {
+    try {
+      const token = localStorage.getItem('fs_token');
+      const res = await fetch('/api/orders', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) throw new Error('No autorizado');
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : (data.orders || []));
+    } catch (err) {
+      console.warn('Failed to load orders', err);
+      setOrders([]);
+    }
+  }
+
+  async function loadOrderDetails(id) {
+    try {
+      const token = localStorage.getItem('fs_token');
+      const res = await fetch(`/api/orders/${id}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!res.ok) throw new Error('No autorizado');
+      const data = await res.json();
+      setSelectedOrder(data);
+    } catch (err) {
+      console.warn('Failed to load order details', err);
+      alert('Error cargando el pedido');
+    }
+  }
+
+  async function saveAnnouncement(e) {
+    e.preventDefault();
+    const token = localStorage.getItem('fs_token');
+    if (!token) return alert('Se requiere token de administrador');
+    const payload = { text: announcementForm.text, active: !!announcementForm.active, starts_at: announcementForm.starts_at || null, ends_at: announcementForm.ends_at || null };
+    try {
+      let res;
+      if (editingAnnouncement) {
+        res = await fetch(`/api/announcements/${editingAnnouncement}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+      } else {
+        res = await fetch('/api/announcements', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Error saving');
+      }
+      setAnnouncementForm({ text: '', active: true, starts_at: '', ends_at: '' });
+      setEditingAnnouncement(null);
+      loadAnnouncements();
+    } catch (err) {
+      alert('Error guardando anuncio: ' + (err.message || err));
+    }
+  }
+
+  function startEditAnnouncement(a) {
+    setEditingAnnouncement(a.id);
+    setAnnouncementForm({ text: a.text || '', active: !!a.active, starts_at: a.starts_at ? a.starts_at.slice(0,16) : '', ends_at: a.ends_at ? a.ends_at.slice(0,16) : '' });
+  }
+
+  async function deleteAnnouncement(id) {
+    if (!window.confirm('¿Eliminar este anuncio?')) return;
+    const token = localStorage.getItem('fs_token');
+    if (!token) return alert('Se requiere token de administrador');
+    try {
+      const res = await fetch(`/api/announcements/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Error deleting');
+      }
+      loadAnnouncements();
+    } catch (err) {
+      alert('Error eliminando anuncio: ' + (err.message || err));
+    }
   }
 
   async function createUser(u) {
@@ -182,11 +335,20 @@ export default function Admin() {
     };
     try {
       if (!token) throw new Error('No token');
-      const res = await fetch('/register', {
+      // intentar endpoint REST moderno
+      let res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ name: u.name, email: u.email, password: u.password })
       });
+      if (!res.ok) {
+        // fallback a ruta legacy
+        res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload)
+        });
+      }
       if (!res.ok) throw new Error('Server error');
       // refresh users list from server
       refreshUsers();
@@ -208,8 +370,38 @@ export default function Admin() {
     refreshUsers();
   }
 
-  if (!currentUser || !currentUser.isAdmin) {
-    return null;
+  async function changeUserRole(id, makeAdmin) {
+    const token = localStorage.getItem('fs_token');
+    if (!token) {
+      alert('Se requiere token de administrador para cambiar roles');
+      return;
+    }
+    try {
+      const res = await fetch(`/api/users/${id}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ is_admin: !!makeAdmin })
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Error updating role');
+      }
+      refreshUsers();
+    } catch (err) {
+      alert('Error cambiando rol: ' + (err.message || err));
+    }
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="admin-page container admin-card">
+        <main>
+          <h1>Acceso denegado</h1>
+          <p>No tienes permisos para ver esta sección. Por favor inicia sesión con una cuenta administradora.</p>
+          <div className="admin-actions"><button className="admin-btn" onClick={() => navigate('/login')}>Ir a Login</button></div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -224,6 +416,8 @@ export default function Admin() {
             <ul className="admin-nav admin-nav-list">
               <li><button type="button" className={view === 'productos' ? 'active' : ''} onClick={() => setView('productos')}>Productos</button></li>
               <li><button type="button" className={view === 'usuarios' ? 'active' : ''} onClick={() => setView('usuarios')}>Usuarios</button></li>
+              <li><button type="button" className={view === 'pedidos' ? 'active' : ''} onClick={() => { setView('pedidos'); loadOrders(); }}>Pedidos</button></li>
+              <li><button type="button" className={view === 'anuncios' ? 'active' : ''} onClick={() => { setView('anuncios'); loadAnnouncements(); }}>Anuncios</button></li>
               <li><button className="admin-logout" type="button" onClick={logout}>Cerrar sesión</button></li>
             </ul>
           </nav>
@@ -241,6 +435,7 @@ export default function Admin() {
                 <label>Nombre: <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></label>
                 <label>Descripción: <input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></label>
                 <label>Precio: <input type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></label>
+                <label>Stock: <input type="number" min={0} value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} /></label>
                 <label>Categoría:
                   <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} required>
                     <option value="">Selecciona una categoría</option>
@@ -273,6 +468,47 @@ export default function Admin() {
           </section>
         )}
 
+        {view === 'anuncios' && (
+          <section id="admin-anuncios">
+            <h2>Anuncios</h2>
+            <div className="admin-actions">
+              <button type="button" className="admin-btn" onClick={() => { setEditingAnnouncement(null); setAnnouncementForm({ text: '', active: true, starts_at: '', ends_at: '' }); }}>Nuevo Anuncio</button>
+            </div>
+
+            <form className="admin-form" onSubmit={saveAnnouncement} style={{ marginTop: '1rem' }}>
+              <label>Texto:
+                <textarea value={announcementForm.text} onChange={e => setAnnouncementForm({ ...announcementForm, text: e.target.value })} rows={3} maxLength={500} required />
+              </label>
+              <label className="label-inline">
+                <input type="checkbox" checked={announcementForm.active} onChange={e => setAnnouncementForm({ ...announcementForm, active: e.target.checked })} />
+                <span>Activo</span>
+              </label>
+              <label>Inicio (opcional): <input type="datetime-local" value={announcementForm.starts_at} onChange={e => setAnnouncementForm({ ...announcementForm, starts_at: e.target.value })} /></label>
+              <label>Fin (opcional): <input type="datetime-local" value={announcementForm.ends_at} onChange={e => setAnnouncementForm({ ...announcementForm, ends_at: e.target.value })} /></label>
+              <div style={{ marginTop: 8 }}>
+                <button type="submit" className="admin-btn">{editingAnnouncement ? 'Guardar' : 'Crear'}</button>
+                {editingAnnouncement && <button type="button" className="admin-btn" style={{ marginLeft: 8 }} onClick={() => { setEditingAnnouncement(null); setAnnouncementForm({ text: '', active: true, starts_at: '', ends_at: '' }); }}>Cancelar</button>}
+              </div>
+            </form>
+
+            <div id="lista-anuncios" className="admin-list" style={{ marginTop: '1rem' }}>
+              {announcements.length === 0 && <p>No hay anuncios.</p>}
+              {announcements.map(a => (
+                <div key={a.id} className="admin-item">
+                  <div>
+                    <strong>{a.text}</strong>
+                    <div className="admin-desc">Activo: {a.active ? 'Sí' : 'No'} — Desde: {a.starts_at || '—'} — Hasta: {a.ends_at || '—'}</div>
+                  </div>
+                  <div className="admin-actions">
+                    <button type="button" className="admin-btn" onClick={() => startEditAnnouncement(a)}>Editar</button>
+                    <button type="button" className="admin-btn" onClick={() => deleteAnnouncement(a.id)} style={{ marginLeft: 8 }}>Eliminar</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {view === 'usuarios' && (
           <section id="admin-usuarios">
             <h2>Gestión de Usuarios</h2>
@@ -285,14 +521,60 @@ export default function Admin() {
                 <div key={u.id} className="admin-item">
                   <div>
                     <strong>{u.name || u.email}</strong>
-                    <div className="admin-desc">{u.email}</div>
+                    <div className="admin-desc">{u.email} {u.is_admin || u.isAdmin ? <span style={{color:'var(--accent-color)', fontWeight:700, marginLeft:6}}>Admin</span> : null}</div>
                   </div>
                   <div className="admin-actions">
+                    <button type="button" className="admin-btn" onClick={() => changeUserRole(u.id, !(u.is_admin || u.isAdmin))}>{(u.is_admin || u.isAdmin) ? 'Revocar admin' : 'Promover'}</button>
                     <button type="button" className="admin-btn" onClick={() => deleteUser(u.id)}>Eliminar</button>
                   </div>
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {view === 'pedidos' && (
+          <section id="admin-pedidos">
+            <h2>Pedidos</h2>
+            <div className="admin-actions">
+              <button type="button" className="admin-btn" onClick={() => loadOrders()}>Actualizar</button>
+            </div>
+
+            <div id="lista-pedidos" className="admin-list" style={{ marginTop: '1rem' }}>
+              {orders.length === 0 && <p>No hay pedidos.</p>}
+              {orders.map(o => (
+                <div key={o.id} className="admin-item">
+                  <div>
+                    <strong>Pedido #{o.id}</strong>
+                    <div className="admin-desc">Usuario: {o.user_email || o.email || (o.user && o.user.email) || '—'} — Total: ${o.total || o.amount || '—'}</div>
+                  </div>
+                  <div className="admin-actions">
+                    <button type="button" className="admin-btn" onClick={() => loadOrderDetails(o.id)}>Ver</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {selectedOrder && (
+              <div className="admin-card" style={{ marginTop: '1rem', padding: '1rem' }}>
+                <h3>Pedido #{selectedOrder.id}</h3>
+                <div>Usuario: {selectedOrder.user_email || selectedOrder.email || (selectedOrder.user && selectedOrder.user.email)}</div>
+                <div>Estado: {selectedOrder.status || '—'}</div>
+                <div>Total: ${selectedOrder.total || selectedOrder.amount || '—'}</div>
+                <div className="admin-desc" style={{ marginTop: 8 }}>
+                  {selectedOrder.items && selectedOrder.items.length ? (
+                    <ul>
+                      {selectedOrder.items.map((it, idx) => (
+                        <li key={idx}>{it.name || it.product_name || (it.product && it.product.name)} x {it.quantity || it.qty} — ${it.price || it.unit_price}</li>
+                      ))}
+                    </ul>
+                  ) : <div>No hay ítems listados.</div>}
+                </div>
+                <div className="admin-actions" style={{ marginTop: 8 }}>
+                  <button type="button" className="admin-btn" onClick={() => setSelectedOrder(null)}>Cerrar</button>
+                </div>
+              </div>
+            )}
           </section>
         )}
       </main>

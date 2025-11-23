@@ -36,20 +36,50 @@ export function CartProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('carrito', JSON.stringify(cart));
   }, [cart]);
-
   function addToCart(id) {
     // nueva firma addToCart(id, cantidad = 1)
     const cantidad = arguments.length > 1 ? Number(arguments[1]) || 1 : 1;
-    const producto = productsAPI.getProduct(id);
-    if (!producto) return;
-    setCart(prev => {
-      const existing = prev.find(i => i.id === id);
-      if (existing) {
-        return prev.map(i => i.id === id ? { ...i, cantidad: (i.cantidad || 0) + cantidad } : i);
-      }
-      return [...prev, { ...producto, cantidad }];
+    // getProduct es async; manejar correctamente
+    productsAPI.getProduct(id).then(producto => {
+      if (!producto) return;
+      setCart(prev => {
+        const existing = prev.find(i => i.id === id);
+        if (existing) {
+          return prev.map(i => i.id === id ? { ...i, cantidad: (i.cantidad || 0) + cantidad } : i);
+        }
+        return [...prev, { ...producto, cantidad }];
+      });
+    }).catch(err => {
+      console.error('Failed to add product to cart', err);
     });
   }
+
+  // Al montar, sanear carrito cargado desde localStorage: si hay items sin datos completos, rehidratar desde API
+  useEffect(() => {
+    let mounted = true;
+    async function hydrate() {
+      try {
+        const needFix = cart.some(i => i && !(i.name || i.nombre) && (i.id || i.productId));
+        if (!needFix) return;
+        const fixed = await Promise.all(cart.map(async (i) => {
+          if (!i) return i;
+          if (i.name || i.nombre) return i;
+          const pid = i.id || i.productId;
+          try {
+            const p = await productsAPI.getProduct(pid);
+            return p ? { ...p, cantidad: i.cantidad || 1 } : i;
+          } catch (e) {
+            return i;
+          }
+        }));
+        if (mounted) setCart(fixed);
+      } catch (e) {
+        // ignore
+      }
+    }
+    hydrate();
+    return () => { mounted = false; };
+  }, []);
 
   function removeFromCart(id) {
     setCart(prev => prev.filter(i => i.id !== id));

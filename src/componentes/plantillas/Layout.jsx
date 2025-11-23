@@ -11,7 +11,7 @@ export default function Layout({ children }) {
       <main className="main-content container">{children}</main>
       {showCart && <Cart />}
       <footer>
-        <p>© 2025 Tienda Online Perfumes</p>
+        <p>© 2025 PerfumeStore</p>
       </footer>
     </div>
   );

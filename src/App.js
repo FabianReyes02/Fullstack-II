@@ -8,6 +8,7 @@ import Login from './componentes/paginas/Login';
 import Register from './componentes/paginas/Register';
 import Contacto from './componentes/paginas/Contacto';
 import Admin from './componentes/paginas/Admin';
+// AdminOrders and OrderDetail were removed in favor of the integrated Admin view
 import ProductoDetail from './componentes/paginas/ProductoDetail';
 import './style.css';
 
