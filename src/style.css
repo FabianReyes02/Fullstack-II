@@ -149,6 +149,12 @@ html { background-color: var(--page-background); }
 @media (max-width: 420px) {
   .hero-section { height: 44vh; min-height: 280px }
   .hero-text { padding: 0.6rem; }
+
+/* Utility spacing classes used across admin pages */
+.mt-1 { margin-top: 1rem !important; }
+.mt-8 { margin-top: 8px !important; }
+.ml-8 { margin-left: 8px !important; }
+.card-padded { padding: 1rem !important; }
   .hero-text h1 { font-size: 1.25rem; }
   .hero-subtitle { font-size: 0.95rem }
 }

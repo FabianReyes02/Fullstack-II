@@ -475,7 +475,7 @@ export default function Admin() {
               <button type="button" className="admin-btn" onClick={() => { setEditingAnnouncement(null); setAnnouncementForm({ text: '', active: true, starts_at: '', ends_at: '' }); }}>Nuevo Anuncio</button>
             </div>
 
-            <form className="admin-form" onSubmit={saveAnnouncement} style={{ marginTop: '1rem' }}>
+            <form className="admin-form mt-1" onSubmit={saveAnnouncement}>
               <label>Texto:
                 <textarea value={announcementForm.text} onChange={e => setAnnouncementForm({ ...announcementForm, text: e.target.value })} rows={3} maxLength={500} required />
               </label>
@@ -485,13 +485,13 @@ export default function Admin() {
               </label>
               <label>Inicio (opcional): <input type="datetime-local" value={announcementForm.starts_at} onChange={e => setAnnouncementForm({ ...announcementForm, starts_at: e.target.value })} /></label>
               <label>Fin (opcional): <input type="datetime-local" value={announcementForm.ends_at} onChange={e => setAnnouncementForm({ ...announcementForm, ends_at: e.target.value })} /></label>
-              <div style={{ marginTop: 8 }}>
+              <div className="mt-8">
                 <button type="submit" className="admin-btn">{editingAnnouncement ? 'Guardar' : 'Crear'}</button>
-                {editingAnnouncement && <button type="button" className="admin-btn" style={{ marginLeft: 8 }} onClick={() => { setEditingAnnouncement(null); setAnnouncementForm({ text: '', active: true, starts_at: '', ends_at: '' }); }}>Cancelar</button>}
+                {editingAnnouncement && <button type="button" className="admin-btn ml-8" onClick={() => { setEditingAnnouncement(null); setAnnouncementForm({ text: '', active: true, starts_at: '', ends_at: '' }); }}>Cancelar</button>}
               </div>
             </form>
 
-            <div id="lista-anuncios" className="admin-list" style={{ marginTop: '1rem' }}>
+            <div id="lista-anuncios" className="admin-list mt-1">
               {announcements.length === 0 && <p>No hay anuncios.</p>}
               {announcements.map(a => (
                 <div key={a.id} className="admin-item">
@@ -501,7 +501,7 @@ export default function Admin() {
                   </div>
                   <div className="admin-actions">
                     <button type="button" className="admin-btn" onClick={() => startEditAnnouncement(a)}>Editar</button>
-                    <button type="button" className="admin-btn" onClick={() => deleteAnnouncement(a.id)} style={{ marginLeft: 8 }}>Eliminar</button>
+                    <button type="button" className="admin-btn ml-8" onClick={() => deleteAnnouncement(a.id)}>Eliminar</button>
                   </div>
                 </div>
               ))}
@@ -540,7 +540,7 @@ export default function Admin() {
               <button type="button" className="admin-btn" onClick={() => loadOrders()}>Actualizar</button>
             </div>
 
-            <div id="lista-pedidos" className="admin-list" style={{ marginTop: '1rem' }}>
+            <div id="lista-pedidos" className="admin-list mt-1">
               {orders.length === 0 && <p>No hay pedidos.</p>}
               {orders.map(o => (
                 <div key={o.id} className="admin-item">
@@ -556,12 +556,12 @@ export default function Admin() {
             </div>
 
             {selectedOrder && (
-              <div className="admin-card" style={{ marginTop: '1rem', padding: '1rem' }}>
+              <div className="admin-card card-padded mt-1">
                 <h3>Pedido #{selectedOrder.id}</h3>
                 <div>Usuario: {selectedOrder.user_email || selectedOrder.email || (selectedOrder.user && selectedOrder.user.email)}</div>
                 <div>Estado: {selectedOrder.status || '—'}</div>
                 <div>Total: ${selectedOrder.total || selectedOrder.amount || '—'}</div>
-                <div className="admin-desc" style={{ marginTop: 8 }}>
+                <div className="admin-desc mt-8">
                   {selectedOrder.items && selectedOrder.items.length ? (
                     <ul>
                       {selectedOrder.items.map((it, idx) => (
@@ -570,7 +570,7 @@ export default function Admin() {
                     </ul>
                   ) : <div>No hay ítems listados.</div>}
                 </div>
-                <div className="admin-actions" style={{ marginTop: 8 }}>
+                <div className="admin-actions mt-8">
                   <button type="button" className="admin-btn" onClick={() => setSelectedOrder(null)}>Cerrar</button>
                 </div>
               </div>
