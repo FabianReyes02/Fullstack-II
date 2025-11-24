@@ -9,15 +9,26 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
 
+  // Base URL for API calls (embedded at build time or falls back to relative paths)
+  const API_BASE = (process.env.REACT_APP_API_URL || '').replace(/\/$/, '');
+
   useEffect(() => {
     async function init() {
       try {
         const token = localStorage.getItem('fs_token');
         if (!token) return;
-        const res = await fetch('/api/auth/profile', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_BASE}/api/auth/profile`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) { localStorage.removeItem('fs_token'); return; }
-        const data = await res.json();
-        setCurrentUser({ ...data.user, token });
+        // parse JSON safely (some responses may be empty or non-json)
+        const contentType = res.headers.get('content-type') || '';
+        let data = {};
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          try { data = text ? JSON.parse(text) : {}; } catch (e) { data = {}; }
+        }
+        if (data && data.user) setCurrentUser({ ...data.user, token });
       } catch (error) {
         console.error("Failed to load profile", error);
       }
@@ -26,13 +37,28 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = (email, password) => {
-    return fetch('/api/auth/login', {
+    return fetch(`${API_BASE}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     }).then(async res => {
-      if (!res.ok) throw new Error('Invalid credentials');
-      const data = await res.json();
+      // try to parse response safely
+      const contentType = res.headers.get('content-type') || '';
+      let data = {};
+      if (contentType.includes('application/json')) {
+        try { data = await res.json(); } catch (e) { data = {}; }
+      } else {
+        const text = await res.text();
+        try { data = text ? JSON.parse(text) : {}; } catch (e) { data = {}; }
+      }
+
+      if (!res.ok) {
+        // surface server-provided error if present
+        const msg = (data && data.error) ? data.error : 'Invalid credentials';
+        throw new Error(msg);
+      }
+
+      if (!data || !data.token) throw new Error('Invalid server response');
       localStorage.setItem('fs_token', data.token);
       const user = { ...data.user, token: data.token };
       setCurrentUser(user);
