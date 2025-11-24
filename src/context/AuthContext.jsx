@@ -19,14 +19,18 @@ export function AuthProvider({ children }) {
         if (!token) return;
         const res = await fetch(`${API_BASE}/api/auth/profile`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) { localStorage.removeItem('fs_token'); return; }
-        // parse JSON safely (some responses may be empty or non-json)
+        // Always read as text first to avoid json() on empty body
         const contentType = res.headers.get('content-type') || '';
+        const text = await res.text();
         let data = {};
-        if (contentType.includes('application/json')) {
-          data = await res.json();
-        } else {
-          const text = await res.text();
-          try { data = text ? JSON.parse(text) : {}; } catch (e) { data = {}; }
+        if (text) {
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            // fallback: if content-type indicates json but parse failed, leave data empty
+            console.warn('Auth profile: failed to parse JSON response', e);
+            data = {};
+          }
         }
         if (data && data.user) setCurrentUser({ ...data.user, token });
       } catch (error) {
@@ -42,14 +46,12 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     }).then(async res => {
-      // try to parse response safely
+      // Always read response as text first to avoid json() on empty body
       const contentType = res.headers.get('content-type') || '';
+      const text = await res.text();
       let data = {};
-      if (contentType.includes('application/json')) {
-        try { data = await res.json(); } catch (e) { data = {}; }
-      } else {
-        const text = await res.text();
-        try { data = text ? JSON.parse(text) : {}; } catch (e) { data = {}; }
+      if (text) {
+        try { data = JSON.parse(text); } catch (e) { console.warn('Auth login: failed to parse JSON response', e); data = {}; }
       }
 
       if (!res.ok) {
