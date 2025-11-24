@@ -30,7 +30,8 @@ export default function Register() {
     // Enviar al backend
     (async () => {
       try {
-        const res = await fetch('/api/auth/register', {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch('/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: formData.nombre, email: formData.email, password: formData.password })

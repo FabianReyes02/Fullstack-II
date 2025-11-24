@@ -12,6 +12,11 @@ export function AuthProvider({ children }) {
   // Base URL for API calls (embedded at build time or falls back to relative paths)
   const API_BASE = (process.env.REACT_APP_API_URL || '').replace(/\/$/, '');
 
+  if (!process.env.REACT_APP_API_URL) {
+    // Friendly console warning to help diagnose deploy misconfiguration
+    console.warn('REACT_APP_API_URL is not defined. In production set REACT_APP_API_URL to your backend URL in the Static Site env vars. Falling back to relative /api paths which may fail cross-origin.');
+  }
+
   useEffect(() => {
     async function init() {
       try {

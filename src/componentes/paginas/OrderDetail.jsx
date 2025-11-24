@@ -16,7 +16,8 @@ export default function OrderDetail() {
       setError(null);
       try {
         const token = localStorage.getItem('fs_token') || (currentUser && currentUser.token);
-        const res = await fetch(`/api/orders/${id}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch(`/api/orders/${id}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
         if (!res.ok) throw new Error('No autorizado o pedido no encontrado');
         const data = await res.json();
         setOrder(data);

@@ -11,7 +11,8 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/mensaje');
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch('/api/mensaje');
         if (!res.ok) return;
         const data = await res.json();
         setBackendInfo(data || null);

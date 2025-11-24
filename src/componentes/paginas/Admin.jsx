@@ -186,12 +186,17 @@ export default function Admin() {
     async function loadUsers() {
       // Intenta obtener usuarios del servidor primero (si existe endpoint público o permite lista)
       try {
-        const tryRes = await fetch('/api/users');
-        if (tryRes.ok) {
-          const data = await tryRes.json();
-          const list = Array.isArray(data) ? data : data.users || data;
-          setUsuarios(list || []);
-          return;
+        try {
+          const { apiFetch } = await import('../../utils/api');
+          const tryRes = await apiFetch('/api/users');
+          if (tryRes.ok) {
+            const data = await tryRes.json();
+            const list = Array.isArray(data) ? data : data.users || data;
+            setUsuarios(list || []);
+            return;
+          }
+        } catch (e) {
+          // ignore and fallback
         }
       } catch (e) {
         // ignore and fallback to token-based or localStorage
@@ -201,12 +206,17 @@ export default function Admin() {
       try {
         const token = localStorage.getItem('fs_token');
         if (token) {
-          const res = await fetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
-          if (res.ok) {
-            const data = await res.json();
-            const list = Array.isArray(data) ? data : data.users || data;
-            setUsuarios(list || []);
-            return;
+          try {
+            const { apiFetch } = await import('../../utils/api');
+            const res = await apiFetch('/api/users', { headers: { Authorization: `Bearer ${token}` } });
+            if (res.ok) {
+              const data = await res.json();
+              const list = Array.isArray(data) ? data : data.users || data;
+              setUsuarios(list || []);
+              return;
+            }
+          } catch (e) {
+            // ignore
           }
         }
       } catch (e) {
@@ -225,13 +235,16 @@ export default function Admin() {
   function refreshUsers() {
     (async () => {
       try {
-        const res = await fetch('/api/users');
-        if (res.ok) {
-          const data = await res.json();
-          const list = Array.isArray(data) ? data : data.users || data;
-          setUsuarios(list || []);
-          return;
-        }
+        try {
+          const { apiFetch } = await import('../../utils/api');
+          const res = await apiFetch('/api/users');
+          if (res.ok) {
+            const data = await res.json();
+            const list = Array.isArray(data) ? data : data.users || data;
+            setUsuarios(list || []);
+            return;
+          }
+        } catch (e) { /* ignore */ }
       } catch (e) { /* ignore */ }
 
       try { setUsuarios(JSON.parse(localStorage.getItem(USERS_KEY) || '[]')); } catch (e) { setUsuarios([]); }
@@ -241,10 +254,15 @@ export default function Admin() {
   async function loadAnnouncements() {
     try {
       const token = localStorage.getItem('fs_token');
-      const res = await fetch('/api/announcements', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-      if (!res.ok) throw new Error('No autorizado');
-      const data = await res.json();
-      setAnnouncements(Array.isArray(data) ? data : []);
+      try {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch('/api/announcements', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (!res.ok) throw new Error('No autorizado');
+        const data = await res.json();
+        setAnnouncements(Array.isArray(data) ? data : []);
+      } catch (err) {
+        throw err;
+      }
     } catch (err) {
       console.warn('Failed to load announcements', err);
       setAnnouncements([]);
@@ -257,10 +275,15 @@ export default function Admin() {
   async function loadOrders() {
     try {
       const token = localStorage.getItem('fs_token');
-      const res = await fetch('/api/orders', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-      if (!res.ok) throw new Error('No autorizado');
-      const data = await res.json();
-      setOrders(Array.isArray(data) ? data : (data.orders || []));
+      try {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch('/api/orders', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (!res.ok) throw new Error('No autorizado');
+        const data = await res.json();
+        setOrders(Array.isArray(data) ? data : (data.orders || []));
+      } catch (err) {
+        throw err;
+      }
     } catch (err) {
       console.warn('Failed to load orders', err);
       setOrders([]);
@@ -270,10 +293,15 @@ export default function Admin() {
   async function loadOrderDetails(id) {
     try {
       const token = localStorage.getItem('fs_token');
-      const res = await fetch(`/api/orders/${id}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-      if (!res.ok) throw new Error('No autorizado');
-      const data = await res.json();
-      setSelectedOrder(data);
+      try {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch(`/api/orders/${id}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (!res.ok) throw new Error('No autorizado');
+        const data = await res.json();
+        setSelectedOrder(data);
+      } catch (err) {
+        throw err;
+      }
     } catch (err) {
       console.warn('Failed to load order details', err);
       alert('Error cargando el pedido');
@@ -287,10 +315,15 @@ export default function Admin() {
     const payload = { text: announcementForm.text, active: !!announcementForm.active, starts_at: announcementForm.starts_at || null, ends_at: announcementForm.ends_at || null };
     try {
       let res;
-      if (editingAnnouncement) {
-        res = await fetch(`/api/announcements/${editingAnnouncement}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
-      } else {
-        res = await fetch('/api/announcements', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+      try {
+        const { apiFetch } = await import('../../utils/api');
+        if (editingAnnouncement) {
+          res = await apiFetch(`/api/announcements/${editingAnnouncement}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+        } else {
+          res = await apiFetch('/api/announcements', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+        }
+      } catch (err) {
+        throw err;
       }
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -314,10 +347,15 @@ export default function Admin() {
     const token = localStorage.getItem('fs_token');
     if (!token) return alert('Se requiere token de administrador');
     try {
-      const res = await fetch(`/api/announcements/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Error deleting');
+      try {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch(`/api/announcements/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Error deleting');
+        }
+      } catch (err) {
+        throw err;
       }
       loadAnnouncements();
     } catch (err) {
@@ -336,20 +374,25 @@ export default function Admin() {
     try {
       if (!token) throw new Error('No token');
       // intentar endpoint REST moderno
-      let res = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: u.name, email: u.email, password: u.password })
-      });
-      if (!res.ok) {
-        // fallback a ruta legacy
-        res = await fetch('/register', {
+      try {
+        const { apiFetch } = await import('../../utils/api');
+        let res = await apiFetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ name: u.name, email: u.email, password: u.password })
         });
+        if (!res.ok) {
+          // fallback a ruta legacy
+          res = await apiFetch('/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(payload)
+          });
+        }
+        if (!res.ok) throw new Error('Server error');
+      } catch (err) {
+        throw err;
       }
-      if (!res.ok) throw new Error('Server error');
       // refresh users list from server
       refreshUsers();
       return;
@@ -377,14 +420,19 @@ export default function Admin() {
       return;
     }
     try {
-      const res = await fetch(`/api/users/${id}/role`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ is_admin: !!makeAdmin })
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Error updating role');
+      try {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch(`/api/users/${id}/role`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ is_admin: !!makeAdmin })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || 'Error updating role');
+        }
+      } catch (err) {
+        throw err;
       }
       refreshUsers();
     } catch (err) {

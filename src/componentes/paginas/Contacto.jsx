@@ -43,7 +43,8 @@ export default function Contacto() {
     // Try send to backend, fallback to localStorage
     (async () => {
       try {
-        const res = await fetch('/api/contact', {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch('/api/contact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)

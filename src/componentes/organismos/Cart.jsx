@@ -28,7 +28,8 @@ export default function Cart() {
       setPurchaseLoading(true);
       setPurchaseError(null);
       try {
-        const res = await fetch('/api/orders', {
+        const { apiFetch } = await import('../../utils/api');
+        const res = await apiFetch('/api/orders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ items })
